@@ -1,19 +1,11 @@
-0000000000000000000        00000000000000000   00000000000000        0                 0   000000000000000       00000000000000000000
-                 0       00                    0             00        0             0     0              0                0
-              00        0                      0               0         0         0       0               00              0
-           00          00                      0             00            0     0         0              0                0
-        00             00                      0000000000000                 0 0           000000000000000                 0
-     00                 0                      0 0                            0            0                               0
-  00                     00                    0      0                       0            0                               0
-0000000000000000000        00000000000000000   0           0                  0            0                               0
-
-
 # Manual summary
- - Introduction
- - Crypting Engine
- - Commands and their use
- - Error Codes
- - Settings
+ - [Introduction](#introduction)
+ - [Crypting Engine](#crypting-engine)
+ - [Commands and their use](#command-usage)
+   - [Encrypt](#encrypt)
+   - [Decrypt](#decrypt)
+   - [Error Codes](#error-codes)
+   - [Settings](#settings)
 
 
 # Introduction
@@ -37,21 +29,22 @@ Recap, let's take an example your message is "a" : a ==> 97 ==> 97 + 25(key) ==>
 
 # Command usage
 You can type different commands to use ZCrypt
-Here are they : encrypt, decrypt, settings, instructions, showErrors and manual
+Here are they : `encrypt`, `decrypt`, `settings`, `instructions`, `showErrors` and `manual`
 
-When you want to encrypt a message, type encrypt and press enter
+## Encrypt
+When you want to `encrypt` a message, type encrypt and press enter
 Everything will be explained using prints as you go on this process
 At the end, the file containing the encrypted message will be saved with a name as text file
 This name is, by default, set to "Mail.txt" but this can be changed in settings
 
-When you want to decrypt a message, everything is very simple you just need to type decrypt
+## Decrypt
+When you want to `decrypt` a message, everything is very simple you just need to type decrypt
 After that, ZCrypt will prompt the user to enter the file name
 Finally, all informations about the message will be displayed
 These information are : the date the message was created/wrote; the sender; the reciever and finally the message
 Note : these information can be saved to a text file
 
-
-# Settings
+## Settings
 ZCrypt also offers a settings page
 In this part of the software, only 3 commands are allowed : see, set and exit
 Every settings has its own number (eg : 1; 2; 3...)
@@ -64,8 +57,7 @@ If you want to go back to the software main page, type exit and will be able to 
 The instructions command explains shortly how the program works and how to use it
 Please consider reading it if this is your first time using ZCrypt
 
-
-# Error Codes
+## Error Codes
 Sometimes ZCrypt is not able to decrypt your message
 When this happens, you can type showErrors to understand why your file can't be decrypted
 When you type this command, ZCrypt returns you error codes (eg : E301; E421...) which each of them is linked to a specific reason ZCrypt could not decrypt your file

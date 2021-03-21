@@ -1,7 +1,8 @@
 from time import sleep
 from datetime import datetime
+from calendar import day_name
 import os
-from random import *
+from random import randint
 import string
 from printy import *
 
@@ -15,6 +16,8 @@ Error_Code = list()
 settings_list = list()
 settings_list.append("1")
 file_output = "Mail.txt"
+date_format = '1'
+warnBeforeOW = True
 
 
 def fileCheck() :
@@ -355,7 +358,7 @@ def prepareOutput() :
 		except :
 			overwriteOut = False
 
-		if overwriteOut == True :
+		if overwriteOut == True and warnBeforeOW == True :
 			printy("Warning !", 'y', end = ' ')
 			printy(file_output, 'y', end = ' ')
 			printy("already exists.", 'y')
@@ -374,6 +377,15 @@ def prepareOutput() :
 					printy("OK. Encryption aborted", 'c') 
 			else :
 				printy("OK. Encryption aborted", 'c') 	
+		
+		#if the warning has been disabled
+		elif overwriteOut == True and warnBeforeOW == False :
+			writeFile(final_time_encr, sender_encr, reciever_encr, key_bin, message_str)
+			printy("Note : a file has been overwritten", "y")
+
+		else :
+			writeFile(final_time_encr, sender_encr, reciever_encr, key_bin, message_str)
+
 	else :
 		printy("Error ! The name of the file you want to save is incorect. Please try another one !", 'm')
 
@@ -431,32 +443,32 @@ def dateSettings() :
 
 #Decrypts the date and time
 def decryptTime() :
-	global day_decrypted
-	global month_decrypted
-	global year_decrypted
-	global hour_decrypted
-	global min_decrypted
-	global sec_decrypted
+	decryptTime.day_decrypted = 0
+	decryptTime.month_decrypted = 0
+	decryptTime.year_decrypted = 0
+	decryptTime.hour_decrypted = 0
+	decryptTime.min_decrypted = 0
+	decryptTime.sec_decrypted = 0
 
 	#Decrypting days
 	day1 = day[:2]
 	day1_decrypted = int(day1) - decrypt_key
 	day2 = day[2:]
 	day2_decrypted = int(day2) - decrypt_key
-	day_decrypted = int(str(day1_decrypted) + str(day2_decrypted))
-	if len(str(day_decrypted)) == 1 :
-		nbr = str(day_decrypted)[0]
-		day_decrypted = str(0) + str(nbr)
+	decryptTime.day_decrypted = str(day1_decrypted) + str(day2_decrypted)
+	if len(str(decryptTime.day_decrypted)) == 1 :
+		nbr = str(decryptTime.day_decrypted)[0]
+		decryptTime.day_decrypted = str(0) + str(nbr)
 
 	#Decrypting the month
 	month1 = month[:2]
 	month1_decrypted = int(month1) - decrypt_key
 	month2 = month[2:]
 	month2_decrypted = int(month2) - decrypt_key
-	month_decrypted = int(str(month1_decrypted) + str(month2_decrypted))
-	if len(str(month_decrypted)) == 1 :
-		nbr = str(month_decrypted)[0]
-		month_decrypted = str(0) + str(nbr)
+	decryptTime.month_decrypted = str(month1_decrypted) + str(month2_decrypted)
+	if len(str(decryptTime.month_decrypted)) == 1 :
+		nbr = str(decryptTime.month_decrypted)[0]
+		decryptTime.month_decrypted = str(0) + str(nbr)
 
 	#Decrypting the year
 	year1 = year[:2]
@@ -467,41 +479,41 @@ def decryptTime() :
 	year3_decrypted = int(year3) - decrypt_key
 	year4 = year[6:]
 	year4_decrypted = int(year4) - decrypt_key
-	year_decrypted = int(str(year1_decrypted) + str(year2_decrypted) + str(year3_decrypted) + str(year4_decrypted))
+	decryptTime.year_decrypted = str(year1_decrypted) + str(year2_decrypted) + str(year3_decrypted) + str(year4_decrypted)
 
 	#Decrypting hour
 	hour1 = hour[:2]
 	hour1_decrypted = int(hour1) - decrypt_key
 	hour2 = hour[2:]
 	hour2_decrypted = int(hour2) - decrypt_key
-	hour_decrypted = int(str(hour1_decrypted) + str(hour2_decrypted))
-	if len(str(hour_decrypted)) == 1 :
-		nbr = str(hour_decrypted)[0]
-		hour_decrypted = str(0) + str(nbr)
+	decryptTime.hour_decrypted = str(hour1_decrypted) + str(hour2_decrypted)
+	if len(str(decryptTime.hour_decrypted)) == 1 :
+		nbr = str(decryptTime.hour_decrypted)[0]
+		decryptTime.hour_decrypted = str(0) + str(nbr)
 
 	#Decrypting minutes
 	min1 = minutes[:2]
 	min1_decrypted = int(min1) - decrypt_key
 	min2 = minutes[2:]
 	min2_decrypted = int(min2) - decrypt_key
-	min_decrypted = int(str(min1_decrypted) + str(min2_decrypted))
-	if len(str(min_decrypted)) == 1 :
-		nbr = str(min_decrypted)[0]
-		min_decrypted = str(0) + str(nbr)
+	decryptTime.min_decrypted = str(min1_decrypted) + str(min2_decrypted)
+	if len(str(decryptTime.min_decrypted)) == 1 :
+		nbr = str(decryptTime.min_decrypted)[0]
+		decryptTime.min_decrypted = str(0) + str(nbr)
 
 	#Decrypting seconds
 	sec1 = seconds[:2]
 	sec1_decrypted = int(sec1) - decrypt_key
 	sec2 = seconds[2:]
 	sec2_decrypted = int(sec2) - decrypt_key
-	sec_decrypted = int(str(sec1_decrypted) + str(sec2_decrypted))
-	if len(str(sec_decrypted)) == 1 :
-		nbr = str(sec_decrypted)[0]
-		sec_decrypted = str(0) + str(nbr)
+	decryptTime.sec_decrypted = str(sec1_decrypted) + str(sec2_decrypted)
+	if len(str(decryptTime.sec_decrypted)) == 1 :
+		nbr = str(decryptTime.sec_decrypted)[0]
+		decryptTime.sec_decrypted = str(0) + str(nbr)
 
-	#print("Today is", day_decrypted, month_decrypted, year_decrypted, sep = '/')
-	#print("It is currently", hour_decrypted, min_decrypted, sec_decrypted, sep = ':')
-	return day_decrypted, month_decrypted, year_decrypted, hour_decrypted, min_decrypted, sec_decrypted
+	#print("Today is", decryptTime.day_decrypted, decryptTime.month_decrypted, decryptTime.year_decrypted, sep = '/')
+	#print("It is currently", decryptTime.hour_decrypted, decryptTime.min_decrypted, decryptTime.sec_decrypted, sep = ':')
+	return decryptTime.day_decrypted, decryptTime.month_decrypted, decryptTime.year_decrypted, decryptTime.hour_decrypted, decryptTime.min_decrypted, decryptTime.sec_decrypted
 
 def decryptSender() :
 	global sender_decr
@@ -651,33 +663,92 @@ def decrypt() :
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and prints everything in a user friendly presentation
 def printDecrypted() :
+	#list of the months to know which month number corresponds to what month in plain text
+	references = {
+
+		'months' : { 
+			'01' : 'january',
+			'02' : 'february',
+			'03' : 'march',
+			'04' : 'april',
+			'05' : 'may',
+			'06' : 'june',
+			'07' : 'july',
+			'08' : 'august',
+			'09' : 'september',
+			'10' : 'october',
+			'11' : 'november',
+			'12' : 'december'
+			}
+
+		}
+
 	printy("We finished decrypting your file !", "n")
 	printy("Here is everything you need to know about it :", "n")
 	print("")
-	
-	printy("This message was created ", "c", end = '')
-	print(day_decrypted, month_decrypted, year_decrypted, "c", sep = '/', end = ' ')
+
+	finalEntireDate = ''
+	if date_format == '1' :
+		finalEntireDate = decryptTime.day_decrypted + '/' + decryptTime.month_decrypted + '/' + decryptTime.year_decrypted
+	elif date_format == '2' :
+		finalEntireDate = decryptTime.day_decrypted + '/' + decryptTime.month_decrypted + '/' + decryptTime.year_decrypted[2:4]
+	elif date_format == '3' :
+		finalEntireDate = decryptTime.year_decrypted + '/' + decryptTime.month_decrypted + '/' + decryptTime.day_decrypted
+	elif date_format == '4' :
+		month_text = references['months'][decryptTime.month_decrypted]
+		
+		#Used to find the day of the week with the date number
+		dayWeek = findDayDate(decryptTime.day_decrypted + ' ' + decryptTime.month_decrypted + ' ' + decryptTime.year_decrypted)
+
+		#This part analysis what is the day and adds the 'th', 'st'... at the end
+		if decryptTime.day_decrypted == 1 :
+			decryptTime.day_decrypted = decryptTime.day_decrypted + 'st'
+		elif decryptTime.day_decrypted == 2 :
+			decryptTime.day_decrypted = decryptTime.day_decrypted + 'nd'
+		elif decryptTime.day_decrypted == 3 :
+			decryptTime.day_decrypted = decryptTime.day_decrypted + 'rd'
+		else :
+			decryptTime.day_decrypted = decryptTime.day_decrypted + 'th'
+		
+		finalEntireDate = dayWeek + ", " + month_text + " the " + decryptTime.day_decrypted + " " + decryptTime.year_decrypted
+		
+	print("This message was created", finalEntireDate, end = ' ')
 	print("at", end = ' ')
-	print(hour_decrypted, min_decrypted, sec_decrypted, "c", sep = ':')
+	print(decryptTime.hour_decrypted, decryptTime.min_decrypted, decryptTime.sec_decrypted, sep = ':')
 	print("")
 
-	print(sender_decr, "sent it !", "c")
+	print(sender_decr, "sent it !")
 	print("")
 
-	print(reciever_decr, "should recieve it !", "c")
+	print(reciever_decr, "should recieve it !")
 	print("")
 
-	print("And the message is :", final_decrypted, "c")
+	print("And the message is :", final_decrypted)
 
+def findDayDate(date) :
+	dayNumber = datetime.strptime(date, '%d %m %Y').weekday()
+	return (day_name[dayNumber])
 
 def settings() :
 	global stop
 	global file_output
+	global date_format
+	global warnBeforeOW
 	stop = False
+	print("")
 
 	if 'see' in settings_cmd and len(settings_cmd) == 5 :
 		if settings_cmd[4] == '1' :
 			print("Your encrypted messages are currently saved with the following name :", file_output)
+
+		elif settings_cmd[4] == '2' :
+			print("The date format is currently set to", date_format)
+
+		elif settings_cmd[4] == '3' :
+			if warnBeforeOW == True :
+				print("Warning before overwrite is currently enabled")
+			else :
+				print("No warning will be shown before you overwrite an existing file")
 
 		else :
 			printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
@@ -686,7 +757,34 @@ def settings() :
 	elif 'set' in settings_cmd and len(settings_cmd) == 5 :
 		if settings_cmd[4] == '1' :
 			file_output = input("Please enter the name of file you want to be saved as. Don't forget to ad (.txt) at the end ! : ")
-			printy("Done ! The name of the output file has been successfully modified", "n")
+			printy("Done ! The name of the output file has been successfully changed to", "n", end = ' ')
+			printy(file_output, 'n')
+
+		elif settings_cmd[4] == '2' :
+			printy("You have the choice between 4 date formats : 1) dd/mm/YYYY, 2) dd/mm/YY, 3) YYYY-mm-dd or just the 4) plain text format", 'c')
+			choice = inputy("Please enter the number of the date format you want to use (1, 2, 3 or 4) : ", 'c')
+			if int(choice) <= 4 and int(choice) > 0 :
+				date_format = choice
+			else :
+				printy("Error !", 'm', end = ' ')
+				printy(choice, 'm', end = ' ')
+				printy("is not an offered choice", 'm')
+
+		elif settings_cmd[4] == '3' :
+			printy("Sometimes when you encrypt a file, another file with the same name already exists", 'c')
+			printy("When this happens, ZCrypt offers you to choice between overwriting the existing file or doing nothing", 'c')
+			printy("When the file is overwritten, you lose all the data stored on it. This is why we recommend you to backup its content before overwriting", 'c')
+			print("")
+			printy("If you have to save files often, these warning may bore you. If this is so you can disable this warning by typing \"disable\"", 'c')
+			printy("You don't want to disable this warning type anything except \"disable\"", 'c')
+			printy("Please be careful when disabling this warning. You could lose important data and ZCrypt assumes no responsability in this. Do it at your own risk", 'm')
+			testdisable = inputy("Input : ")
+			if testdisable == "disable" :
+				printy("Caution : Warning before overwrite is now disabled", 'y')
+				warnBeforeOW = False
+			else :
+				printy("Nothing has been changed", 'c')
+				printy("Returning...", 'c')
 
 		else :
 			printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
@@ -750,14 +848,16 @@ while True :
 		print("\n", "\n", "\n", "\n")
 		printy("You are now in the settings !", "c")
 		printy("Here, are the options you can change :", "c")
-		printy("    - 1: encrypted file name\n", "c")
+		printy("    - 1: encrypted file name", "c")
+		printy("    - 2: date display format", "c")
+		printy("    - 3: warn before overwrite\n", "c")
 
 		printy("If you want to see the current value of an option, type \"see\" followed by the number linked to the option", "c")
 		printy("If you want to change this value, type \"set\" followed by the number linked to the option", "c")
 		printy("If you want to exit this page, you can also type \"exit\"", "c")
 
 		while stop != True :
-			settings_cmd = input(">>>")
+			settings_cmd = input(">>> ")
 
 			settings()
 
@@ -810,3 +910,6 @@ while True :
 	elif command == 'quit' :
 		printy("Thanks for using ZCrypt ! See you soon...", "c")
 		exit()
+	
+	else :
+		printy("Sorry this command is unknown. Please try again", "m")

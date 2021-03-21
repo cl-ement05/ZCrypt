@@ -14,7 +14,7 @@ warnBeforeOW = True
 defaultName = "Decryted.txt"
 outModeEncrypt = 0
 
-last_key = 15
+last_key = 15                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 
 
 def fileCheck() -> bool :
@@ -130,7 +130,9 @@ def keySetup() :
     last_key = key_num
     key_bin = format(key_num, '08b')
 
-#All this part contains all functions used for encrypting
+
+#All this part contains child functions used for encrypting
+#Encrypting date and time
 def encryptTime() :
     final_time_encr = ''
     final_time_list = list()
@@ -159,7 +161,7 @@ def encryptTime() :
     return final_time_encr
 
 
-#Finding and encrypting sender
+#Encrypting sender
 def encryptSender() :
     sender_encr = ''
     for character in range(len(sender)) :
@@ -167,7 +169,7 @@ def encryptSender() :
         sender_encr += chr(mainEncrypt(sender_ascii))
     return sender_encr
 
-
+#Encrypts receiver
 def encryptReciever() :
     reciever_encr = ''
     for character in range(len(reciever)) :        
@@ -175,7 +177,8 @@ def encryptReciever() :
         reciever_encr += chr(mainEncrypt(reciever_ascii))
     return reciever_encr
 
-def mainEncrypt(toEncrypt) -> int :
+#Main encrypt engine
+def mainEncrypt(toEncrypt) -> int :             #takes a single int argument which must be the ascii representation of a char; returns the encrypted ascii
     #If the key is a pair number
     if key_num % 2 == 0 :
         if toEncrypt - key_num >= 33 :
@@ -205,17 +208,14 @@ def mainEncrypt(toEncrypt) -> int :
     return encrypted
 
 
-#Main encrypt engine
+# Crypting the message
 def encrypt() :
-    keySetup()
-
-    check = 0
     final_message_binary = list()
 
     nbr_letters = len(message_input)
-    for _ in range(nbr_letters) :
+    for i in range(nbr_letters) :
         #Transforms the character in its ascii number
-        current_chr = message_input[check]
+        current_chr = message_input[i]
         ascii_chr = ord(current_chr)
 
         #Spaces are encoded as is they were "~" (its ascii is 126) so to avoid errors, the programm does not support this character
@@ -223,7 +223,6 @@ def encrypt() :
             printy("Error ! Your message contains a character that is not supported", "m")
             break
 
-        #If the key is a pair number
         ascii_encr = mainEncrypt(ascii_chr)
         letter_binary = list()
         #If the Ascii number contains only two numbers, the programm adds a 0 in front oh the two to get a number with 3 binaires at the end
@@ -237,9 +236,8 @@ def encrypt() :
                 letter_binary.append(format(int(str(ascii_encr)[ascii_nbr]), '08b'))
 
         assert(len(letter_binary) == 3)
-        check += 1
 
-        letter_binary.append(';')                                       #Adds the separator (;) to make difference between de letters
+        letter_binary.append(';')                                       #Adds the separator (;) to create a difference between de letters
         letter_str = ''
         for x in range(4) :
             letter_str += letter_binary[x]
@@ -250,61 +248,47 @@ def encrypt() :
     printy(str(key_num), 'c')
     return final_message_binary
 
-#Get all settings and variables and starts the writeFile function to apply changes with the variables
-def prepareOutput() :
-    #Rajouter ici la fonction qui va faire tt les cmd liées au serv
 
-    txt = False
+#Get all settings and encrypted variables from child functions and starts the writeFile function to apply changes
+def prepareEncryptedOutput() :
+    keySetup()                          #creates a new key shared accross whole program
+    final_time_encr = encryptTime()
+    sender_encr = encryptSender()
+    reciever_encr = encryptReciever()
+    final_message_binary = encrypt()
+
+    txt = False                      #boolean variable which is set to true when the file name specified by user is valid that's to say, ends with ".txt"
     message_str = ''
-    message_binary = encrypt()
-    for i in range(len(message_binary)) :
-        message_str += message_binary[i]
+    for i in range(len(final_message_binary)) :         #list to a single string
+        message_str += final_message_binary[i]
     assert(type(message_str) is str)
 
     for letter in range(len(file_output)) :
         if file_output[letter] == '.' and file_output[letter + 1] == 't' and file_output[letter + 2] == 'x' and file_output[letter + 1] == 't' :
             txt = True
 
-    if outModeEncrypt == 0 :
-        choiceMode = inputy("Would you like to output the encrypted content to be saved to a file or simply to be displayed on screen ? (FILE/print) ", "c")
-        if choiceMode == "print" :
-            printy("OK. Entering print mode...")
-            printOutMode(message_str)
-        else :
-            printy("OK. Entering file mode...")
-            fileModeOut(message_str, txt)
-    elif outModeEncrypt == 1 : fileModeOut(message_str, txt)
-    else : printOutMode(message_str)
-
-def printOutMode(message_str) :
-    print(encryptTime())
-    print(encryptSender())
-    print(encryptReciever())
-    print(key_bin)
-    print(message_str)
-
-def fileModeOut(final_message_str, txt) :
     if txt :
         try :
-            testfileOW = open(file_output, "r")
-
-        except FileNotFoundError :
-            writeFile(encryptTime(), encryptSender(), encryptReciever(), key_bin, final_message_str)
+            testfileOW = open(file_output, "r")            #opening in read mode the name specified by the user so that if a file with the same already exists, no error will be raised
+        except FileNotFoundError :                         #else if an error is thrown, file was not found so no file will be overwritten -> writeFile
+            writeFile(final_time_encr, sender_encr, reciever_encr, key_bin, message_str)
 
         else :
-
-            if warnBeforeOW :
-                printy("Warning ! " + file_output + ' already exists', 'y')
+            if warnBeforeOW :                          #boolean setting 1 -> warn user that a file will be overwritten
+                printy("Warning !", 'y', end = ' ')
+                printy(file_output, 'y', end = ' ')
+                printy("already exists.", 'y')
                 printy("If you continue the encryption process, the existing file will be overwritten", 'y')
                 printy("This will irremediably delete its current data", 'y')
                 printy("We highly recommend you to backup this file if personnal infos are stored on it", 'y')
                 printy("Are you sure you want to continue ? (y/n)", 'y', end = '')
                 firstanswer = input(" ")
                 if firstanswer == "y" :
-                    printy(file_output + " will be overwritten !! Proceed anyway ? (y/n)", 'y', end = '')
+                    printy(file_output, 'y', end = ' ')
+                    printy("will be overwritten !! Proceed anyway ? (y/n)", 'y', end ='')
                     confirmation = input(" ")
                     if confirmation == "y" :
-                        writeFile(encryptTime(), encryptSender(), encryptReciever(), key_bin, final_message_str)
+                        writeFile(final_time_encr, sender_encr, reciever_encr, key_bin, message_str)    #after user confirmation that file can be overwritten -> writeFile
                     else :
                         printy("OK. Encryption aborted", 'c') 
                 else :
@@ -312,17 +296,15 @@ def fileModeOut(final_message_str, txt) :
             
             #if the warning has been disabled
             else :
-                writeFile(encryptTime(), encryptSender(), encryptReciever(), key_bin, final_message_str)
-                printy("Note : a file has been overwritten", "y")            
+                writeFile(final_time_encr, sender_encr, reciever_encr, key_bin, message_str)
+                printy("Note : a file has been overwritten", "y")
 
     else :
         printy("Error ! The name of the file you want to save is incorect. Please try another one !", 'm')
 
 
 
-
-
-#Write all changes to the file using the settings prepared by the prepareOutput function
+#Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
 def writeFile(time_w, sender_w, recipient_w, key_w, message_w) :
     #'\n' is used to go to a new line at every new file settings
     file_w = open(file_output, "w")
@@ -340,6 +322,7 @@ def writeFile(time_w, sender_w, recipient_w, key_w, message_w) :
     printy("Done ! Your message has been securely encrypted !", 'n')
 
 
+#All decrypt child functions
 #Decrypts the date and time
 def decryptTime() :
     #Here, the entire line1 that contains the date is spread in different variables
@@ -358,9 +341,9 @@ def decryptTime() :
     year = date[8:]
 
     try :
-        hour = int(hour)
-        minutes = int(minutes)
-        seconds = int(seconds)
+        hourTest = int(hour)
+        minutesTest = int(minutes)
+        secondsTest = int(seconds)
     except ValueError :
         raise ValueError()
 
@@ -388,24 +371,24 @@ def decryptTime() :
     year_decrypted = str(year1_decrypted) + str(year2_decrypted) + str(year3_decrypted) + str(year4_decrypted)
 
     #Decrypting hour
-    hour1_decrypted = hour[:2] - decrypt_key
-    hour2_decrypted = hour[2:] - decrypt_key
+    hour1_decrypted = int(hour[:2]) - decrypt_key
+    hour2_decrypted = int(hour[2:]) - decrypt_key
     hour_decrypted = str(hour1_decrypted) + str(hour2_decrypted)
     if len(str(hour_decrypted)) == 1 :
         nbr = str(hour_decrypted)[0]
         hour_decrypted = str(0) + str(nbr)
 
     #Decrypting minutes
-    min1_decrypted = minutes[:2] - decrypt_key
-    min2_decrypted = minutes[2:] - decrypt_key
+    min1_decrypted = int(minutes[:2]) - decrypt_key
+    min2_decrypted = int(minutes[2:]) - decrypt_key
     min_decrypted = str(min1_decrypted) + str(min2_decrypted)
     if len(str(min_decrypted)) == 1 :
         nbr = str(min_decrypted)[0]
         min_decrypted = str(0) + str(nbr)
 
     #Decrypting seconds
-    sec1_decrypted = seconds[:2] - decrypt_key
-    sec2_decrypted = seconds[2:] - decrypt_key
+    sec1_decrypted = int(seconds[:2]) - decrypt_key
+    sec2_decrypted = int(seconds[2:]) - decrypt_key
     sec_decrypted = str(sec1_decrypted) + str(sec2_decrypted)
     if len(str(sec_decrypted)) == 1 :
         nbr = str(sec_decrypted)[0]
@@ -434,7 +417,7 @@ def decryptReciever() :
     reciever_decr = reciever_decr[:(len(reciever_decr) - 1)]                                                  #This line removes the 0 that spaws after the name
     return reciever_decr    
 
-
+#main decrypt engine
 def mainDecrypt(toencrypt) -> int :
     if key_method == 'plus' :
         if toencrypt + decrypt_key <= 126 :
@@ -460,10 +443,11 @@ def mainDecrypt(toencrypt) -> int :
             remaining_key = decrypt_key - cut
             decrypted_ascii = 126 - remaining_key
     
-    return decrypted_ascii
+    if decrypted_ascii == 126 : return 32    #Since spaces are encrypted as a "~", if the programm finds an ascii of 126 (which is the code of ~), it transoforms the ~ character into a space
+    else : return decrypted_ascii
 
+#decrypting message
 def decrypt() :
-    keySettings()                                                                  #Decrypts the key in the file and find its method
     final_decrypted = ''
 
     nbr_letters = int(len(line5) / 25)
@@ -487,17 +471,13 @@ def decrypt() :
         #The encrypt/decrypt method is different for pair/impair numbers
         decrypted_ascii = mainDecrypt(char_asciiencr)
 
-        #Since spaces are encrypted as a "~", if the programm finds an ascii of 126 (which is the code of ~), he transoforms the ~ character into a space
-        if decrypted_ascii == 126 :
-            decrypted_ascii = 32
-
         final_decrypted += chr(decrypted_ascii)
     return final_decrypted
 
 
-#This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and prints everything in a user friendly presentation
+#This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
 def printDecrypted(sender_decr, reciever_decr, final_decrypted) :
-    #list of the months to know which month number corresponds to what month in plain text
+    #list of the months to know which month number corresponds to what month -> used for date format plain text
     references = {
 
         'months' : { 
@@ -518,12 +498,12 @@ def printDecrypted(sender_decr, reciever_decr, final_decrypted) :
         }
 
     printy("We finished decrypting your file !", "n")
-    printy("Here is everything you need to know about it :", "n")
     print("")
 
     date_decr = decryptTime()
 
     finalEntireDate = ''
+    #changing the final str according to what user specified for date format
     if date_format == '1' :
         finalEntireDate = date_decr[0] + '/' + date_decr[1] + '/' + date_decr[2]
     elif date_format == '2' :
@@ -550,24 +530,33 @@ def printDecrypted(sender_decr, reciever_decr, final_decrypted) :
         finalEntireDate = dayWeek + ", " + month_text + " the " + completeDay + " " + date_decr[2]
         
     finalEntireTime = date_decr[3] + ':' + date_decr[4] + ':' + date_decr[5]
-    printy("This message was created " + finalEntireDate + ' at ' + finalEntireTime, "c>")
+    
+    if outModeEncrypt == 0 :
+        choiceMode = inputy("Would you like to output the encrypted content to be saved to a file or simply to be displayed on screen ? (FILE/print) ", "c")
+        if choiceMode == "print" :
+            printy("OK. Entering print mode...")
+            printOutMode(sender_decr, reciever_decr, final_decrypted, finalEntireDate, finalEntireTime)
+        else :
+            printy("OK. Entering file mode...")
+            saveToExtFile(sender_decr, reciever_decr, final_decrypted, finalEntireDate, finalEntireTime)
+    elif outModeEncrypt == 1 : saveToExtFile(sender_decr, reciever_decr, final_decrypted, finalEntireDate, finalEntireTime)
+    else : printOutMode(sender_decr, reciever_decr, final_decrypted, finalEntireDate, finalEntireTime)
+
+
+def printOutMode(sender_decr, reciever_decr, final_decrypted, date, time) :
+    printy("This message was created " + date + ' at ' + time, "c>")
     print("")
 
-    printy(sender_decr + "sent it !", "c>")
+    printy(sender_decr + " sent it !", "c>")
     print("")
 
     printy(reciever_decr + " should recieve it !", "c>")
     print("")
 
-    print("And the message is : " + final_decrypted, "c>")
+    printy("And the message is : " + final_decrypted, "c>")
 
     print("")
-    printy("You can now save this decrypted information into a text file")
-    choice = inputy("Do you want to do so (yes/no) ? ", 'c')
-    if choice == "yes" or choice == "y" :
-        saveToExtFile(sender_decr, reciever_decr, final_decrypted, finalEntireDate, finalEntireTime)
-    else :
-        print("No problem. Nothing has been written")
+
 
 def saveToExtFile(sender_decr, reciever_decr, final_decrypted, date, time) :
     txt = False
@@ -611,12 +600,12 @@ def findDayDate(date) :
     dayNumber = datetime.strptime(date, '%d %m %Y').weekday()
     return (day_name[dayNumber])
 
+
 def settings() :
     global file_output
     global date_format
     global warnBeforeOW
     global outModeEncrypt
-    stop = False
     print("")
 
     dateFormatDict = {
@@ -638,7 +627,7 @@ def settings() :
     printy("If you want to change this value, type \"set\" followed by the number linked to the option", "c")
     printy("If you want to exit this page, you can also type \"exit\"", "c")
 
-    while stop != True :
+    while True :
         printy("You are currenly in settings ! Encrypt and decrypt are not part of this context. To go back to the main menu type \"exit\"", 'y')
         settings_cmd = input(">>> ")
 
@@ -670,12 +659,13 @@ def settings() :
             elif settings_cmd[4] == '2' :
                 printy("You have the choice between 4 date formats : 1) dd/mm/YYYY, 2) dd/mm/YY, 3) YYYY-mm-dd or just the 4) plain text format", 'c')
                 choice = inputy("Please enter the number of the date format you want to use (1, 2, 3 or 4) : ", 'c')
-                if int(choice) <= 4 and int(choice) > 0 :
-                    date_format = choice
-                    printy('Successfully set date format to', 'c', end = ' ')
-                    printy(dateFormatDict[choice], 'c')
-                else :
-                    printy("Error ! " + choice + " is not an offered choice", 'm')
+                try :
+                    if int(choice) <= 4 and int(choice) > 0 :
+                        date_format = choice
+                        printy('Successfully set date format to ' + dateFormatDict[choice], 'n')
+                    else :
+                        printy("Error ! " + choice + " is not an offered choice", 'm')
+                except ValueError : printy("Please enter an integer", "m")
 
             elif settings_cmd[4] == '3' :
                 printy("Sometimes when you encrypt a file, another file with the same name already exists", 'c')
@@ -690,8 +680,8 @@ def settings() :
                     printy("Caution : Warning before overwrite is now disabled", 'y')
                     warnBeforeOW = False
                 else :
-                    printy("Nothing has been changed", 'c')
-                    printy("Returning...", 'c')
+                    printy("Nothing has been changed", 'n')
+                    printy("Returning...", 'n')
 
             elif settings_cmd[4] == "4" :
                 printy("Starting from V2.3 you can now chose what you want ZCrypt to do with your encrypted content", 'c')
@@ -699,20 +689,22 @@ def settings() :
                 printy("If you choose 0, ZCrypt will always ask you if you want to save to a file or just show the content on screen", "c")
                 printy("If you choose 1, ZCrypt will always save your encrypted content to a file, here " + file_output, "c")
                 printy("Note : mode 1 works just like ZCypt used to function in releases before V2.3", 'c')
-                printy("If you choos 2, ZCrypt will always output your encrypted content to your screen", "c")
+                printy("If you choose 2, ZCrypt will always output your encrypted content to your screen", "c")
                 choice = inputy("Input :  ")
-                if 0 <= int(choice) <= 2 : 
-                    outModeEncrypt = int(choice)
-                    printy("Successfully set output mode to " + choice, 'c')
-                else : printy(choice + " is not an offered choice", "m")
+                try :
+                    if 0 <= int(choice) <= 2 : 
+                        outModeEncrypt = int(choice)
+                        printy("Successfully set output mode to " + choice, 'n')
+                    else : printy(choice + " is not an offered choice", "m")
+                except ValueError :
+                    printy("Please enter an integer", "m")
             
             else :
                 printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
 
 
         elif settings_cmd == 'exit' :
-            stop = True
-            return
+            break
 
         else :
             printy("Error ! Either this command is unknown either it does not use the needed format ! See the manual to learn more ", "m")
@@ -726,9 +718,9 @@ printy("#######################", "c>")
 printy("Here are the commands you can use : encrypt, decrypt and you can also see the user manual by typing \"manual\"", "n>")
 printy("If this is your first time using the program, please consider using the \"instructions\" command", "n>")
 printy("If you want to access the settings, type \"settings\"", "n>")
-printy("You can also exit the program by typing \"quit\"", "n>")                                                #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
+printy("You can also exit the program by typing \"quit\"", "n>")                                                
     
-
+#main loop
 while True :
     print("")
     printy("Please input a command ", "c")
@@ -741,7 +733,7 @@ while True :
         sender = input("Please type your name that will be used in the file as the sender information : ")
         reciever = input("Finally, type the reciever of this message : ")
 
-        prepareOutput()
+        prepareEncryptedOutput()
 
 
     elif command == "decrypt" :

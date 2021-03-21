@@ -3,6 +3,7 @@ from datetime import datetime
 import os
 from random import *
 import string
+from printy import *
 
 count = 0
 check = 0
@@ -31,7 +32,8 @@ def fileCheck() :
 		file = open(file_name, 'r+')
 		file_pass = True
 	except :
-		Error_Code.append("")
+		Error_Code.append("E101")
+		file_pass = False
 
 	if file_pass == True :
 		text = file.readlines()
@@ -41,6 +43,7 @@ def fileCheck() :
 			pass
 		elif len(text) > 5 or len(text) < 5 :
 			file_pass = False
+			Error_Code.append("E201")
 
 	#Assigns a variable name with the line number to each element (line) in the file
 	if file_pass == True :
@@ -57,6 +60,49 @@ def fileCheck() :
 				line5 = text[4]
 			count += 1
 
+	if file_pass == True :
+		try :
+			str1 = str(line1)
+			str2 = str(line2)
+			str3 = str(line3)
+			str4 = str(line4)
+			str5 = str(line5)
+		except :
+			Error_Code.append("E202")
+			file_pass = False
+
+
+		if len(line1) == 29 :                                                              #29 because there is a \n at the end of the line and the n is a character
+			try :
+				test21 = int(line1[:28])
+			except :
+				file_pass = False
+				Error_Code.append("E301")
+		else :
+			file_pass = False
+			Error_Code.append("E302")
+
+		if len(line4) == 9 :
+			try :
+				test = int(line4, 2)
+			except :
+				file_pass = False
+				Error_Code.append("E313")
+		else :
+			file_pass = False
+			Error_Code.append("E314")
+
+		if ';' in line5 :
+			try :
+				test3 = int(line5[:24])
+			except :
+				file_pass = False
+				Error_Code.append("E325")
+		else :
+			file_pass = False
+			Error_Code.append("E326")
+
+	if file_pass == True :
 		return file_pass, line1, line2, line3, line4, line5
 
 
@@ -121,7 +167,8 @@ def encryptTime() :
 			if current_time[element] == '/' or current_time[element] == ':' or current_time[element] == ' ' :
 				pass
 			else :
-				print("Error")
+				printy("Sorry there was an error. Please try again", "m")
+				sleep(4)
 				exit()
 
 		#If the try passes and the current element is an integer (so a number that is part from the date), encyption starts
@@ -230,7 +277,7 @@ def encrypt() :
 
 		#Spaces are encoded as is they were "~" (its ascii is 126) so to avoid errors, the programm does not support this character
 		if ascii_chr == 126 :
-			print("Error ! Your message contains a character that is not supported")
+			printy("Error ! Your message contains a character that is not supported", "m")
 			break
 
 		#If the key is a pair number
@@ -279,16 +326,19 @@ def encrypt() :
 
 		final_message_binary.append(letter_str)
 
-	print("Your key is:", key_num)
+	printy("Your key is :", 'c', end = ' ')
+	printy(str(key_num), 'c')
 	return final_message_binary
 
 #Get all settings and variables and starts the writeFile function to apply changes with the variables
 def prepareOutput() :
 	encryptTime()
+	#Rajouter ici la fonction qui va faire tt les cmd liées au serv
 	encryptSender()
 	encryptReciever()
 
 	txt = False
+	overwriteOut = False
 	message_str = ''
 	for i in range(len(final_message_binary)) :
 		message_str += final_message_binary[i]
@@ -299,9 +349,33 @@ def prepareOutput() :
 			txt = True
 
 	if txt == True :
-		writeFile(final_time_encr, sender_encr, reciever_encr, key_bin, message_str)
+		try :
+			testfileOW = open(file_output, "r")
+			overwriteOut = True
+		except :
+			overwriteOut = False
+
+		if overwriteOut == True :
+			printy("Warning !", 'y', end = ' ')
+			printy(file_output, 'y', end = ' ')
+			printy("already exists.", 'y')
+			printy("If you continue the encryption process, the existing file will be overwritten", 'y')
+			printy("This will irremediably delete its current data", 'y')
+			printy("We highly recommend you to backup this file if personnal infos are stored on it", 'y')
+			printy("Are you sure you want to continue ? (y/n)", 'y', end = '')
+			firstanswer = input(" ")
+			if firstanswer == "y" :
+				printy(file_output, 'y', end = ' ')
+				printy("will be overwritten !! Proceed anyway ? (y/n)", 'y', end ='')
+				confirmation = input(" ")
+				if confirmation == "y" :
+					writeFile(final_time_encr, sender_encr, reciever_encr, key_bin, message_str)
+				else :
+					printy("OK. Encryption aborted", 'c') 
+			else :
+				printy("OK. Encryption aborted", 'c') 	
 	else :
-		print("Error ! The name of the file you want to save is incorect. Please try another one !")
+		printy("Error ! The name of the file you want to save is incorect. Please try another one !", 'm')
 
 #Write all changes to the file using the settings prepared by the prepareOutput function
 def writeFile(time_w, sender_w, recipient_w, key_w, message_w) :
@@ -317,6 +391,8 @@ def writeFile(time_w, sender_w, recipient_w, key_w, message_w) :
 	file_w.write("\n")
 	file_w.write(message_w)
 	file_w.close()
+
+	printy("Done ! Your message has been securely encrypted !", 'n')
 
 
 #In this part, all the function used for decrypting are defined
@@ -575,23 +651,23 @@ def decrypt() :
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and prints everything in a user friendly presentation
 def printDecrypted() :
-	print("We finished decrypting your file !")
-	print("Here is everything you need to know about it :")
+	printy("We finished decrypting your file !", "n")
+	printy("Here is everything you need to know about it :", "n")
 	print("")
 	
-	print("This message was created ", end = '')
-	print(day_decrypted, month_decrypted, year_decrypted, sep = '/', end = ' ')
+	printy("This message was created ", "c", end = '')
+	print(day_decrypted, month_decrypted, year_decrypted, "c", sep = '/', end = ' ')
 	print("at", end = ' ')
-	print(hour_decrypted, min_decrypted, sec_decrypted, sep = ':')
+	print(hour_decrypted, min_decrypted, sec_decrypted, "c", sep = ':')
 	print("")
 
-	print(sender_decr, "sent it !")
+	print(sender_decr, "sent it !", "c")
 	print("")
 
-	print(reciever_decr, "should recieve it !")
+	print(reciever_decr, "should recieve it !", "c")
 	print("")
 
-	print("And the message is :", final_decrypted)
+	print("And the message is :", final_decrypted, "c")
 
 
 def settings() :
@@ -604,38 +680,39 @@ def settings() :
 			print("Your encrypted messages are currently saved with the following name :", file_output)
 
 		else :
-			print("Error ! The option you tried to view does not exists or does have a number assigned to it")
+			printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
 
 	
 	elif 'set' in settings_cmd and len(settings_cmd) == 5 :
 		if settings_cmd[4] == '1' :
 			file_output = input("Please enter the name of file you want to be saved as. Don't forget to ad (.txt) at the end ! : ")
+			printy("Done ! The name of the output file has been successfully modified", "n")
 
 		else :
-			print("Error ! The option you tried to view does not exists or does have a number assigned to it")
+			printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
 
 
 	elif settings_cmd == 'exit' :
 		stop = True
 
 	else :
-		print("Error ! Either this command is unknown either it does not use the needed format ! See the manual to learn more ")
+		printy("Error ! Either this command is unknown either it does not use the needed format ! See the manual to learn more ", "m")
 
 	return stop
 
 
 #Welcome screen
-print("Welcome to ZCrypt !")
-print("Here are the commands you can use : encrypt, decrypt and you can also see the user manual by typing manual")
-print("If this is your first time using the program, please consider using the \"instructions\" command")
-print("If you want to access the settings, type \"settings\"")
-print("You can also exit the program jsut by typing \"quit\"")
+printy("Welcome to ZCrypt !", "n>")
+printy("Here are the commands you can use : encrypt, decrypt and you can also see the user manual by typing \"manual\"", "n>")
+printy("If this is your first time using the program, please consider using the \"instructions\" command", "n>")
+printy("If you want to access the settings, type \"settings\"", "n>")
+printy("You can also exit the program by typing \"quit\"", "n>")
 last_key = 15                                                  #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 	
 
 while True :
 	print("")
-	print("Please input a command ")
+	printy("Please input a command ", "c")
 	command = input(">>> ")
 
 	if command == "encrypt" :
@@ -650,11 +727,12 @@ while True :
 
 
 	elif command == "decrypt" :
-		print("Please specify the COMPLETE name of the file with the .txt end !")
+		Error_Code.clear()
+		printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
 		file_name = input()
 		fileCheck()
 		if file_pass == True :
-			print("Your file was successfully checked and no errors or file integrity violations were found. Continuing...")
+			printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
 			keySettings()
 			dateSettings()
 			decryptSender()
@@ -662,21 +740,21 @@ while True :
 			decrypt()
 			printDecrypted()
 		else :
-			print("Error ! Either the file specified does not use the needed format for the program either it is corrupted.")
-			sleep(1)
+			printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
+			sleep(0.7)
 			print("Aborting...")
-			sleep(1)
+			sleep(0.7)
 
 	elif command == "settings" :
 		stop = False
 		print("\n", "\n", "\n", "\n")
-		print("You are now in the settings !")
-		print("Here, are the options you can change :")
-		print("    - 1: encrypted file name\n")
+		printy("You are now in the settings !", "c")
+		printy("Here, are the options you can change :", "c")
+		printy("    - 1: encrypted file name\n", "c")
 
-		print("If you want to see the current value of an option, type \"see\" followed by the number linked to the option")
-		print("If you want to change this value, type \"set\" followed by the number linked to the option")
-		print("If you want to exit this page, you can also type \"exit\"")
+		printy("If you want to see the current value of an option, type \"see\" followed by the number linked to the option", "c")
+		printy("If you want to change this value, type \"set\" followed by the number linked to the option", "c")
+		printy("If you want to exit this page, you can also type \"exit\"", "c")
 
 		while stop != True :
 			settings_cmd = input(">>>")
@@ -685,7 +763,22 @@ while True :
 
 
 	elif command == "showErrors" : 
-		pass
+		if len(Error_Code) == 1 :
+			print("We are sorry to hear that your file has a problem")
+			print("Please consider reading the manual by typing manual and search for the Error Code ", Error_Code[0])
+			print("Otherwise, ask the sender to send the message again")
+		elif len(Error_Code) > 1 :
+			print("We are sorry to hear that your file has some problems")
+			print("Here are all the codes corresponding to the errors we faced")
+			all_errors = ''
+			for x in Error_Code :
+				all_errors += x
+				all_errors += ' '
+
+			print("Please consider reading the manual by typing manual and search for these Error Codes ", all_errors)
+			print("Otherwise, ask the sender to send the message again")
+		else :
+			printy("Your file has been decrypted without any errors.", "c")
 
 	elif command == "manual" :
 		manual_file = open("Manual.txt", "r")
@@ -696,7 +789,7 @@ while True :
 	elif command == "instructions" :
 		print("Dear User, welcome to ZCrypt !")
 		print("ZCrypt was developped by Clement")
-		print("This software was created in order to encrypt messages easily, send it and decrypt it quickly !")
+		print("This software was created in order to encrypt messages easily, send it and decrypt them quickly !")
 		print("")
 			
 		print("If you want to encrypt a file, remeber that it will be saved in the same location of this program")
@@ -715,5 +808,5 @@ while True :
 		print("Enjoy !")
 
 	elif command == 'quit' :
-		print("Thanks for using ZCrypt ! See you soon...")
+		printy("Thanks for using ZCrypt ! See you soon...", "c")
 		exit()

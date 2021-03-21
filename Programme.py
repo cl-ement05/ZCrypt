@@ -1,9 +1,7 @@
 from time import sleep
 from datetime import datetime
 from calendar import day_name
-import os
 from random import randint
-import string
 from printy import *
 
 count = 0
@@ -18,6 +16,7 @@ settings_list.append("1")
 file_output = "Mail.txt"
 date_format = '1'
 warnBeforeOW = True
+defaultName = "Decryted.txt"
 
 
 def fileCheck() :
@@ -38,7 +37,7 @@ def fileCheck() :
 		Error_Code.append("E101")
 		file_pass = False
 
-	if file_pass == True :
+	if file_pass :
 		text = file.readlines()
 
 		# Checks if the file has 5 lines
@@ -49,7 +48,7 @@ def fileCheck() :
 			Error_Code.append("E201")
 
 	#Assigns a variable name with the line number to each element (line) in the file
-	if file_pass == True :
+	if file_pass :
 		for element in range(5) :
 			if count == 0 :
 				line1 = text[0]
@@ -63,7 +62,7 @@ def fileCheck() :
 				line5 = text[4]
 			count += 1
 
-	if file_pass == True :
+	if file_pass :
 		try :
 			str1 = str(line1)
 			str2 = str(line2)
@@ -105,10 +104,6 @@ def fileCheck() :
 			file_pass = False
 			Error_Code.append("E326")
 
-	if file_pass == True :
-		return file_pass, line1, line2, line3, line4, line5
-
-
 #Here all functions are defined
 #Gets the key which is encrypted in binary
 def keySettings() :
@@ -120,8 +115,6 @@ def keySettings() :
 		key_method = 'plus'
 	else :
 		key_method = 'minus'
-
-	return decrypt_key, key_method
 
 #Encrypts the key
 def keySetup() :
@@ -150,9 +143,6 @@ def keySetup() :
 	
 	last_key = key_num
 	key_bin = format(key_num, '08b')
-	#print(key_num)
-	return key_num, key_bin
-
 
 #All this part contains all functions used for encrypting
 def encryptTime() :
@@ -184,8 +174,6 @@ def encryptTime() :
 		final_time_encr += str(final_time_list[original_number])
 
 	assert(len(final_time_encr) == 28)
-
-	return final_time_encr
 
 
 #Finding and encrypting sender
@@ -225,7 +213,6 @@ def encryptSender() :
 		check += 1
 		sender_encr += str(chr(sender_en))
 
-	return sender_encr
 
 def encryptReciever() :
 	global reciever_encr
@@ -262,7 +249,6 @@ def encryptReciever() :
 		check += 1
 		reciever_encr += str(chr(reciever_en))
 
-	return reciever_encr
 
 #Main encrypt engine
 def encrypt() :
@@ -351,14 +337,14 @@ def prepareOutput() :
 		if file_output[letter] == '.' and file_output[letter + 1] == 't' and file_output[letter + 2] == 'x' and file_output[letter + 1] == 't' :
 			txt = True
 
-	if txt == True :
+	if txt :
 		try :
 			testfileOW = open(file_output, "r")
 			overwriteOut = True
 		except :
 			overwriteOut = False
 
-		if overwriteOut == True and warnBeforeOW == True :
+		if overwriteOut and warnBeforeOW :
 			printy("Warning !", 'y', end = ' ')
 			printy(file_output, 'y', end = ' ')
 			printy("already exists.", 'y')
@@ -551,7 +537,6 @@ def decryptSender() :
 		check += 1
 
 	sender_decr = sender_decr[:(len(sender_decr) - 1)]                                                  #This line removes the 0 that spaws after the name
-	return sender_decr
 
 
 def decryptReciever() :
@@ -590,7 +575,6 @@ def decryptReciever() :
 		check += 1
 
 	reciever_decr = reciever_decr[:(len(reciever_decr) - 1)]                                                  #This line removes the 0 that spaws after the name
-	return reciever_decr
 
 
 def decrypt() :
@@ -626,7 +610,7 @@ def decrypt() :
 			
 			current += 1
 
-		char_asciiencr = int(str(encrypted_ascii1) + str(encrypted_ascii2) + str(encrypted_ascii3))			# Joins the two ascii numbers got from the binaries
+		char_asciiencr = int(str(encrypted_ascii1) + str(encrypted_ascii2) + str(encrypted_ascii3))			# Joins the three ascii numbers got from the binaries
 		#print("Encrypted ascii:", char_asciiencr)
 		#The encrypt/decrypt method is different for pair/impair numbers
 		if key_method == 'plus' :
@@ -659,7 +643,6 @@ def decrypt() :
 
 		final_decrypted += chr(decrypted_ascii)
 
-	return final_decrypted
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and prints everything in a user friendly presentation
 def printDecrypted() :
@@ -712,18 +695,70 @@ def printDecrypted() :
 		
 		finalEntireDate = dayWeek + ", " + month_text + " the " + decryptTime.day_decrypted + " " + decryptTime.year_decrypted
 		
-	print("This message was created", finalEntireDate, end = ' ')
+	finalEntireTime = decryptTime.hour_decrypted + ':' + decryptTime.min_decrypted + ':' + decryptTime.sec_decrypted
+	print("This message was created", end = ' ')
+	printy(finalEntireDate, 'c>', end = ' ')
 	print("at", end = ' ')
-	print(decryptTime.hour_decrypted, decryptTime.min_decrypted, decryptTime.sec_decrypted, sep = ':')
+	printy(finalEntireTime, 'c>')
 	print("")
 
-	print(sender_decr, "sent it !")
+	printy(sender_decr, "c>", end = " ")
+	print("sent it !")
 	print("")
 
-	print(reciever_decr, "should recieve it !")
+	printy(reciever_decr, "c>", end = " ")
+	print("should recieve it !")
 	print("")
 
-	print("And the message is :", final_decrypted)
+	print("And the message is :", end = ' ')
+	printy(final_decrypted, 'c>')
+
+	print("")
+	printy("You can now save this decrypted information into a text file")
+	choice = inputy("Do you want to do so (yes/no) ? ", 'c')
+	if choice == "yes" or choice == "y" :
+		saveToExtFile(finalEntireDate, finalEntireTime)
+	else :
+		print("No problem. Nothing has been written")
+
+def saveToExtFile(date, time) :
+	txt = False
+	
+	print("")
+	printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
+	printy("If the name you enter is not a valid one, the default name,", 'c', end = ' ')
+	printy(defaultName, 'c', end = ' ')
+	printy("will be used", 'c')
+	filename = inputy("Enter file name : ")
+	print("")
+
+	for letter in range(len(filename)) :
+		if filename[letter] == '.' and filename[letter + 1] == 't' and filename[letter + 2] == 'x' and filename[letter + 1] == 't' :
+			txt = True
+	
+	if txt != True :
+		printy("Error the name you entered is not valid", 'm')
+		printy(defaultName, "y", end = " ")
+		printy("will be used instead" ,'y')
+		filename = defaultName
+	
+	fileToWrite = open(filename, 'w')
+	fileToWrite.write("Timestamp : ")
+	fileToWrite.write(date + ' at ' + time)
+	fileToWrite.write("\n")
+	fileToWrite.write("Sender : ")
+	fileToWrite.write(sender_decr)
+	fileToWrite.write("\n")
+	fileToWrite.write("Reciever : ")
+	fileToWrite.write(reciever_decr)
+	fileToWrite.write("\n")
+	fileToWrite.write("Message : ")
+	fileToWrite.write(final_decrypted)
+	fileToWrite.close()
+
+	printy("All the decrypted data has been securely saved to", 'c', end = ' ')
+	printy(filename, 'c')
+
 
 def findDayDate(date) :
 	dayNumber = datetime.strptime(date, '%d %m %Y').weekday()
@@ -745,7 +780,7 @@ def settings() :
 			print("The date format is currently set to", date_format)
 
 		elif settings_cmd[4] == '3' :
-			if warnBeforeOW == True :
+			if warnBeforeOW :
 				print("Warning before overwrite is currently enabled")
 			else :
 				print("No warning will be shown before you overwrite an existing file")
@@ -800,7 +835,9 @@ def settings() :
 
 
 #Welcome screen
-printy("Welcome to ZCrypt !", "n>")
+printy("#######################", "c>")
+printy("# Welcome to ZCrypt ! #", "c>")
+printy("#######################", "c>")
 printy("Here are the commands you can use : encrypt, decrypt and you can also see the user manual by typing \"manual\"", "n>")
 printy("If this is your first time using the program, please consider using the \"instructions\" command", "n>")
 printy("If you want to access the settings, type \"settings\"", "n>")
@@ -829,7 +866,7 @@ while True :
 		printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
 		file_name = input()
 		fileCheck()
-		if file_pass == True :
+		if file_pass :
 			printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
 			keySettings()
 			dateSettings()
@@ -881,7 +918,7 @@ while True :
 			printy("Your file has been decrypted without any errors.", "c")
 
 	elif command == "manual" :
-		manual_file = open("UserManual.md", "r")
+		manual_file = open("Manual.txt", "r")
 		manual_text = manual_file.readlines()
 		for line in range(len(manual_text)) :
 			print(manual_text[line])

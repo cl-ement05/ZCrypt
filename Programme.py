@@ -881,7 +881,7 @@ while True :
 			printy("Your file has been decrypted without any errors.", "c")
 
 	elif command == "manual" :
-		manual_file = open("Manual.txt", "r")
+		manual_file = open("UserManual.md", "r")
 		manual_text = manual_file.readlines()
 		for line in range(len(manual_text)) :
 			print(manual_text[line])

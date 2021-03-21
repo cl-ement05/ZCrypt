@@ -1,0 +1,70 @@
+0000000000000000000        00000000000000000   00000000000000        0                 0   000000000000000       00000000000000000000
+                 0       00                    0             00        0             0     0              0                0
+              00        0                      0               0         0         0       0               00              0
+           00          00                      0             00            0     0         0              0                0
+        00             00                      0000000000000                 0 0           000000000000000                 0
+     00                 0                      0 0                            0            0                               0
+  00                     00                    0      0                       0            0                               0
+0000000000000000000        00000000000000000   0           0                  0            0                               0
+
+
+Manual organisation :
+ - Introduction
+ - Crypting Engine
+ - Commands and their use
+
+
+
+Thanks for choosing ZCrypt !
+This software was developped by Clement and has been released the 24th of February 2020
+
+ZCrypt is a progam that uses Python engine to run
+Please, take into consideration that, all the files linked to this app or which were created by this app will be saved in the same location that the software
+So, if you want to decrypt a message, please paste the file you want to decrypt in the software's location
+
+Crypting Engine :
+Now Let's talk a bit about cryptography...
+Here is how ZCrypt encrypting engine works
+When you type, your message, ZCrypt make an analysis of each character
+After that, he assigns to each character its corresponding Ascii number and changes this number by adding or removing another number : the key !
+The program deicdes to add or remove a number considering one more time the key : if the key is a pair number, it removes the key from the original Ascii but if the key is an impair number, it adds the key to the Ascii code of the character
+After that, ZCrypt splits the final encrypted ascii in three number (eg : 126; 093; 105...) and for each character of this Ascii number, it transforms it in its binary version
+At the end, we get three binary codes (3 * 8) so a total lenght of 24 numbers
+Recap, let's take an example your message is "a" : a ==> 97 ==> 97 + 25(key) ==> 122 ==> 00000001 (binary of 1) 00000010 (binary of 2) 00000010 (binary of 2)
+
+Command usage :
+You can type different commands to use ZCrypt
+Here are they : encrypt, decrypt, settings, instructions, showErrors and manual
+
+When you want to encrypt a message, type encrypt and press enter
+Everything you need to do will be displayed
+At the end, the file containing the encrypted message will be saved with a name as text file
+This name is, by default, set to "Mail.txt" but you can change it in the settings
+
+When you decrypt a message, everything is very simple
+You just need to type decrypt
+After that, ZCrypt will ask you to enter the name of the file you want to decrypt
+Finally, all informations about the message will be displayed
+These informations are : the date the message was created/wrote; the sender; the reciever and finally the message
+
+ZCrypt offers to the user a settings page
+In this part of the software, only 3 commands are allowed : see, set and exit
+Every option you can change has a number assigned to it (eg : 1; 2; 3...)
+
+When you want to see the status (also called value) of a setting, type "see X" where X is the number of the setting you want to see
+If you want to change this value, type "set X" where is X is one more time the number assigned to the setting you want to edit
+If you want to go back to the software main page, type exit and will be able to encrypt or decrypt messages again
+!!! Warning : Since the commands (enrypt or decrypt) are not registered in the settings, crypting or decrypting messages is not possible when you are in the settings
+
+The instructions command explains very shortly and easily how the program works and how to use it
+Please consider reading it if this is your first time using ZCrypt
+If you need help, you can always read it
+
+
+
+
+
+
+
+
+

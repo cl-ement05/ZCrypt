@@ -60,8 +60,8 @@ def fileCheck() -> bool :
 
         if len(line1) == 29 :                                                              #29 because there is a \n at the end of the line and the n is a character
             try :
-                test21 = int(line1[:28])
-            except ValueError :
+                assert(type(int(line1[:28]))) is int
+            except (ValueError, AssertionError) :
                 Error_Code = "E301"
                 return False
         else :
@@ -70,8 +70,8 @@ def fileCheck() -> bool :
 
         if len(line4) == 9 :
             try :
-                test = int(line4, 2)
-            except ValueError :
+                assert(type(int(line4, 2))) is int
+            except (ValueError, AssertionError) :
                 Error_Code = "E313"
                 return False
         else :
@@ -80,8 +80,8 @@ def fileCheck() -> bool :
 
         if ';' in line5 :
             try :
-                test3 = int(line5[:24])
-            except ValueError :
+                assert(type(int(line5[:24]))) is int
+            except (ValueError, AssertionError) :
                 Error_Code = "E325"
                 return False
         else :

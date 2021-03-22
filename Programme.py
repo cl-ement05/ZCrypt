@@ -5,7 +5,7 @@ from printy import printy, inputy
 
 file_test = False
 file = ''
-Error_Code = list()
+Error_Code = str()
 file_output = "Mail.txt"
 
 #Default settings
@@ -24,11 +24,12 @@ def fileCheck() -> bool :
     global line3
     global line4
     global line5
+    global Error_Code
 
     try :
         file = open(file_name, 'r+')
     except FileNotFoundError :
-        Error_Code.append("E101")
+        Error_Code = "E101"
         return False
 
     else :
@@ -36,7 +37,7 @@ def fileCheck() -> bool :
 
         # Checks if the file has 5 lines
         if len(text) > 5 or len(text) < 5 :
-            Error_Code.append("E201")
+            Error_Code = "E201"
             return False
 
         #Assigns a variable name with the line number to each element (line) in the file
@@ -53,7 +54,7 @@ def fileCheck() -> bool :
             assert(type(line4) == str)
             assert(type(line5) == str)
         except AssertionError :
-            Error_Code.append("E202")
+            Error_Code = "E202"
             return False
 
 
@@ -61,30 +62,30 @@ def fileCheck() -> bool :
             try :
                 test21 = int(line1[:28])
             except ValueError :
-                Error_Code.append("E301")
+                Error_Code = "E301"
                 return False
         else :
-            Error_Code.append("E302")
+            Error_Code = "E302"
             return False
 
         if len(line4) == 9 :
             try :
                 test = int(line4, 2)
             except ValueError :
-                Error_Code.append("E313")
+                Error_Code = "E313"
                 return False
         else :
-            Error_Code.append("E314")
+            Error_Code = "E314"
             return False
 
         if ';' in line5 :
             try :
                 test3 = int(line5[:24])
             except ValueError :
-                Error_Code.append("E325")
+                Error_Code = "E325"
                 return False
         else :
-            Error_Code.append("E326")
+            Error_Code = "E326"
             return False
     
     return True
@@ -721,7 +722,7 @@ while True :
 
 
     elif command == "decrypt" :
-        Error_Code.clear()
+        Error_Code = ""
         printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
         file_name = input()
         if fileCheck() :
@@ -736,15 +737,24 @@ while True :
         settings()
 
     elif command == "showErrors" : 
-        if len(Error_Code) == 1 :
+        if Error_Code != "" :
             print("We are sorry to hear that your file has a problem")
-            print("Please consider reading the manual by typing manual and search for the Error Code ", Error_Code[0])
-            print("Otherwise, ask the sender to send the message again")
+            print("Here is your error code :", Error_Code)
+            print("This is an excract from the UserManual where your error code is discussed")
+
+            #Showing info about the error code starting with ...
+            manual_file = open("UserManual.txt", "r")
+            
+            #Explaining the error itself
+            all_lines = manual_file.readlines()
+            for line in range(len(all_lines)) :
+                if Error_Code in all_lines[line] : print(all_lines[line])
+            
         else :
             printy("Your file has been decrypted without any errors.", "c")
 
     elif command == "manual" :
-        manual_file = open("Manual.txt", "r")
+        manual_file = open("UserManual.txt", "r")
         manual_text = manual_file.readlines()
         for line in range(len(manual_text)) :
             print(manual_text[line])

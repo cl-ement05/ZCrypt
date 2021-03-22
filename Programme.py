@@ -153,9 +153,7 @@ def encryptTime() :
             encrypted_int = int(str(current_time[element])) + int(key_num)
             final_time_list.append(encrypted_int)
 
-    #Now all the date components are encrypted and in the list
-    for original_number in range(len(final_time_list)) :
-        final_time_encr += str(final_time_list[original_number])
+    final_time_encr = "".join(final_time_list)
 
     assert(len(final_time_encr) == 28)
     return final_time_encr
@@ -258,10 +256,7 @@ def prepareEncryptedOutput() :
     final_message_binary = encrypt()
 
     txt = False                      #boolean variable which is set to true when the file name specified by user is valid that's to say, ends with ".txt"
-    message_str = ''
-    for i in range(len(final_message_binary)) :         #list to a single string
-        message_str += final_message_binary[i]
-    assert(type(message_str) is str)
+    message_str = "".join(final_message_binary)
 
     for letter in range(len(file_output)) :
         if file_output[letter] == '.' and file_output[letter + 1] == 't' and file_output[letter + 2] == 'x' and file_output[letter + 1] == 't' :
@@ -339,13 +334,6 @@ def decryptTime() :
     day = date[:4]
     month = date[4:8]
     year = date[8:]
-
-    try :
-        hourTest = int(hour)
-        minutesTest = int(minutes)
-        secondsTest = int(seconds)
-    except ValueError :
-        raise ValueError()
 
     #Decrypting days
     day1_decrypted = int(day[:2]) - decrypt_key                  #first number => 2 because ChSize is 2

@@ -321,69 +321,52 @@ def writeFile(time_w, sender_w, recipient_w, key_w, message_w) :
 #All decrypt child functions
 #Decrypts the date and time
 def decryptTime() :
-    #Here, the entire line1 that contains the date is spread in different variables
+    #Here, the entire line1 that contains the date is spread into different variables
     chSize = 2
     date = line1[:(chSize * 8)]
     time = line1[(chSize * 8):]
 
-    #Spreading the time list into the hour, minutes...
-    hour = time[:4]
-    minutes = time[4:8]
-    seconds = time[8:]
+    #Decrypting date
+    dateDecr = str()
+    for number in range(0, len(date), 2) :
+        dateDecr += str(int(date[number] + date[number + 1]) - decrypt_key)      #decrypting each digit with the key
+                            #here we loop with a step of 2 since 1 decrypted digit -> 2 encrypted digits (because key > 10)
+    #spreading decrypted date into different variables
+    dayDecrypted = dateDecr[:2]
+    monthDecrypted = dateDecr[2:4]
+    yearDecrypted = dateDecr[4:]
 
-    #Spreading the date list into the days, months...
-    day = date[:4]
-    month = date[4:8]
-    year = date[8:]
+    if len(str(dayDecrypted)) == 1 :
+        nbr = str(dayDecrypted)[0]
+        dayDecrypted = str(0) + str(nbr)
 
-    #Decrypting days
-    day1_decrypted = int(day[:2]) - decrypt_key                  #first number => 2 because ChSize is 2
-    day2_decrypted = int(day[2:]) - decrypt_key
-    day_decrypted = str(day1_decrypted) + str(day2_decrypted)
-    if len(str(day_decrypted)) == 1 :
-        nbr = str(day_decrypted)[0]
-        day_decrypted = str(0) + str(nbr)
+    if len(str(monthDecrypted)) == 1 :
+        nbr = str(monthDecrypted)[0]
+        monthDecrypted = str(0) + str(nbr)
 
-    #Decrypting the month
-    month1_decrypted = int(month[:2]) - decrypt_key
-    month2_decrypted = int(month[2:]) - decrypt_key
-    month_decrypted = str(month1_decrypted) + str(month2_decrypted)
-    if len(str(month_decrypted)) == 1 :
-        nbr = str(month_decrypted)[0]
-        month_decrypted = str(0) + str(nbr)
+    
+    #Decrypting time (same as date)
+    timeDecr = str()
+    for number in range(0, len(date), 2) :
+        timeDecr += str(int(time[number] + time[number + 1]) - decrypt_key)
 
-    #Decrypting the year
-    year1_decrypted = int(year[:2]) - decrypt_key
-    year2_decrypted = int(year[2:4]) - decrypt_key
-    year3_decrypted = int(year[4:6]) - decrypt_key
-    year4_decrypted = int(year[6:]) - decrypt_key
-    year_decrypted = str(year1_decrypted) + str(year2_decrypted) + str(year3_decrypted) + str(year4_decrypted)
+    hourDecrypted = timeDecr[:2]
+    minDecrypted = timeDecr[2:4]
+    secDecrypted = timeDecr[4:]
 
-    #Decrypting hour
-    hour1_decrypted = int(hour[:2]) - decrypt_key
-    hour2_decrypted = int(hour[2:]) - decrypt_key
-    hour_decrypted = str(hour1_decrypted) + str(hour2_decrypted)
-    if len(str(hour_decrypted)) == 1 :
-        nbr = str(hour_decrypted)[0]
-        hour_decrypted = str(0) + str(nbr)
+    if len(str(hourDecrypted)) == 1 :
+        nbr = str(hourDecrypted)[0]
+        hourDecrypted = str(0) + str(nbr)
 
-    #Decrypting minutes
-    min1_decrypted = int(minutes[:2]) - decrypt_key
-    min2_decrypted = int(minutes[2:]) - decrypt_key
-    min_decrypted = str(min1_decrypted) + str(min2_decrypted)
-    if len(str(min_decrypted)) == 1 :
-        nbr = str(min_decrypted)[0]
-        min_decrypted = str(0) + str(nbr)
+    if len(str(minDecrypted)) == 1 :
+        nbr = str(minDecrypted)[0]
+        minDecrypted = str(0) + str(nbr)
 
-    #Decrypting seconds
-    sec1_decrypted = int(seconds[:2]) - decrypt_key
-    sec2_decrypted = int(seconds[2:]) - decrypt_key
-    sec_decrypted = str(sec1_decrypted) + str(sec2_decrypted)
-    if len(str(sec_decrypted)) == 1 :
-        nbr = str(sec_decrypted)[0]
-        sec_decrypted = str(0) + str(nbr)
+    if len(str(secDecrypted)) == 1 :
+        nbr = str(secDecrypted)[0]
+        secDecrypted = str(0) + str(nbr)
 
-    return day_decrypted, month_decrypted, year_decrypted, hour_decrypted, min_decrypted, sec_decrypted
+    return dayDecrypted, monthDecrypted, yearDecrypted, hourDecrypted, minDecrypted, secDecrypted
 
 def decryptSender() :
     sender_encr = line2

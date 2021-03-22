@@ -4,7 +4,8 @@
 * ZCrypt can of course decrypt what was encrypted
 *  A settings page which offers some customization for the user such as changing date format, showing warnings...
 * Custom symmetric encryption algorithm (details in explained in [Manual](Beta/Manual.txt))
-I will try to add support for crypting with RSA in next months
+* I will try to add support for crypting with RSA in next months
+
 Feel free to commit improvements and enjoy !
 
 ## Requirements

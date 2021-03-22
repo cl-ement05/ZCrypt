@@ -559,8 +559,6 @@ def printOutMode(sender_decr, reciever_decr, final_decrypted, date, time) :
 
 
 def saveToExtFile(sender_decr, reciever_decr, final_decrypted, date, time) :
-    txt = False
-    
     print("")
     printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
     printy("If the name you enter is not a valid one, the default name,", 'c', end = ' ')
@@ -568,11 +566,9 @@ def saveToExtFile(sender_decr, reciever_decr, final_decrypted, date, time) :
     printy("will be used", 'c')
     filename = inputy("Enter file name : ")
     print("")
-
-    if filename[-4:] == ".txt" and len(filename) > 4 :     #because e.g. filname is "abc" then abc[-4:] returns "abc" and ".txt" is 4 char long so in order to have a valid name both len() > 4 and ends with ".txt" is required
-        txt = True
     
-    if not txt :
+    #because e.g. filname is "abc" then abc[-4:] returns "abc" and ".txt" is 4 char long so in order to have a valid name both len() > 4 and ends with ".txt" is required 
+    if not (len(filename) > 4 and filename[-4:] == ".txt") :
         printy("Error the name you entered is not valid", 'm')
         printy(defaultName, "y", end = " ")
         printy("will be used instead" ,'y')

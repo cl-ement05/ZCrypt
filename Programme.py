@@ -152,7 +152,7 @@ def encryptTime() :
         #If the try passes and the current element is an integer (so a number that is part from the date), encyption starts
         else :
             encrypted_int = int(str(current_time[element])) + int(keyNum)
-            finalTimeList.append(encrypted_int)
+            finalTimeList.append(str(encrypted_int))
 
     finalTimeEncr = "".join(finalTimeList)
 
@@ -323,7 +323,7 @@ def decryptTime() :
     #Here, the entire line1 that contains the date is spread into different variables
     chSize = 2
     date = line1[:(chSize * 8)]
-    time = line1[(chSize * 8):]
+    time = line1[(chSize * 8):len(line1) - 1]
 
     #Decrypting date
     dateDecr = str()
@@ -346,7 +346,7 @@ def decryptTime() :
     
     #Decrypting time (same as date)
     timeDecr = str()
-    for number in range(0, len(date), 2) :
+    for number in range(0, len(time), 2) :
         timeDecr += str(int(time[number] + time[number + 1]) - decryptKey)
 
     hourDecrypted = timeDecr[:2]

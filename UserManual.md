@@ -9,13 +9,12 @@
 
 
 # Introduction
-This software is being developped by Clement and has been released on February the 24th, 2020
-
-ZCrypt runs with Python
+ZCrypt has been released on February the 24th, 2020 and was originally created by Clement
 
 Please, take into consideration that, all the files linked to this program or which were created by this app will be saved to the software root directory.
 So, if you want to decrypt a message, please paste the file you want to decrypt in the software's folder
 
+ZCrypt is under the [GNU GPLv3 license](LICENSE.md)
 
 # Crypting Engine
 Now Let's talk a bit about cryptography...

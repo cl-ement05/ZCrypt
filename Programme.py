@@ -3,12 +3,11 @@ from calendar import day_name
 from random import randint
 from printy import printy, inputy
 
-file_test = False
 file = ''
 Error_Code = str()
-fileOutput = "Mail.txt"
 
 #Default settings
+fileOutput = "Mail.txt"
 dateFormat = '1'
 warnBeforeOW = True
 defaultName = "Decryted.txt"

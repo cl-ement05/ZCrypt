@@ -177,7 +177,7 @@ def encryptReciever() :
     return recieverEncr
 
 #Main encrypt engine
-def mainEncrypt(toEncrypt) -> int :             #takes a single int argument which must be the ascii representation of a char; returns the encrypted ascii
+def mainEncrypt(toEncrypt: int) -> int :             #takes a single int argument which must be the ascii representation of a char; returns the encrypted ascii
     #If the key is a pair number
     if keyNum % 2 == 0 :
         if toEncrypt - keyNum >= 33 :
@@ -300,7 +300,7 @@ def prepareEncryptedOutput() :
 
 
 #Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
-def writeFile(timeW, senderW, recipientW, keyW, messageW) :
+def writeFile(timeW: str, senderW: str, recipientW: str, keyW: str, messageW: str) :
     #'\n' is used to go to a new line at every new file settings
     file_w = open(fileOutput, "w")
     file_w.write(timeW)
@@ -389,7 +389,7 @@ def decryptReciever() :
     return recieverDecr    
 
 #main decrypt engine
-def mainDecrypt(toencrypt) -> int :
+def mainDecrypt(toencrypt: int) -> int :
     if keyMethod == 'plus' :
         if toencrypt + decryptKey <= 126 :
             decryptedAscii = toencrypt + decryptKey
@@ -447,7 +447,7 @@ def decrypt() :
 
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
-def printDecrypted(senderDecr, recieverDecr, finalDecrypted) :
+def printDecrypted(senderDecr: str, recieverDecr: str, finalDecrypted: str) :
     #list of the months to know which month number corresponds to what month -> used for date format plain text
     references = {
 

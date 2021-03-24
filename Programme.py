@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 from calendar import day_name
 from random import randint
 from printy import printy, inputy

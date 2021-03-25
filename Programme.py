@@ -3,6 +3,7 @@ from calendar import day_name
 from random import randint
 from printy import printy, inputy
 import rsa
+from typing_extensions import final
 
 file = ''
 Error_Code = str()
@@ -131,50 +132,63 @@ def ZkeySetup() :
     lastKey = keyNum
     keyBin = format(keyNum, '08b')
 
+def RkeySetup() :
+    global privKey, pubKey
+    (pubKey, privKey) = rsa.newkeys(1024)
+
 
 #All this part contains child functions used for encrypting
 #Encrypting date and time
-def ZencryptTime() :
+def encryptTime(mode) :
     finalTimeEncr = ''
     finalTimeList = list()
     now = datetime.now()
     current_time = now.strftime("%d/%m/%Y %H:%M:%S")
 
-    for element in range(len(current_time)) :
-        #This try is used to skip date characters like (/ and :) that cannot be encrypted and will be removed
-        try :
-            test = int(current_time[element])
-        except ValueError :
-            if current_time[element] != '/' and current_time[element] != ':' and current_time[element] != ' ' :
-                printy("Sorry there was an error. Please try again", "m")
-                exit()
+    if mode == "z" :
+        for element in range(len(current_time)) :
+            #This try is used to skip date characters like (/ and :) that cannot be encrypted and will be removed
+            try :
+                test = int(current_time[element])
+            except ValueError :
+                if current_time[element] != '/' and current_time[element] != ':' and current_time[element] != ' ' :
+                    printy("Sorry there was an error. Please try again", "m")
+                    exit()
 
-        #If the try passes and the current element is an integer (so a number that is part from the date), encyption starts
-        else :
-            encrypted_int = int(str(current_time[element])) + int(keyNum)
-            finalTimeList.append(str(encrypted_int))
-
-    finalTimeEncr = "".join(finalTimeList)
+            #If the try passes and the current element is an integer (so a number that is part from the date), encyption starts
+            else :
+                encrypted_int = int(str(current_time[element])) + int(keyNum)
+                finalTimeList.append(str(encrypted_int))
+        finalTimeEncr = "".join(finalTimeList)
+    else :
+        return rsa.encrypt(current_time.encode("utf8"), pubKey)
+        
 
     assert(len(finalTimeEncr) == 28)
     return finalTimeEncr
 
 
 #Encrypting sender
-def ZencryptSender() :
+def encryptSender(mode) :
     senderEncr = ''
-    for character in range(len(sender)) :
-        senderAscii = ord(sender[character])
-        senderEncr += chr(mainEncrypt(senderAscii))
-    return senderEncr
+    if mode =="z" :
+        for character in range(len(sender)) :
+            senderAscii = ord(sender[character])
+            senderEncr += chr(mainEncrypt(senderAscii))
+        return senderEncr
+    else :
+        return rsa.encrypt(sender.encode("utf8"), pubKey)
 
 #Encrypts receiver
-def ZencryptReciever() :
+def encryptReciever(mode) :
     recieverEncr = ''
-    for character in range(len(reciever)) :        
-        recieverAscii = ord(reciever[character])
-        recieverEncr += chr(mainEncrypt(recieverAscii))
-    return recieverEncr
+    if mode == "z" :
+        for character in range(len(reciever)) :        
+            recieverAscii = ord(reciever[character])
+            recieverEncr += chr(mainEncrypt(recieverAscii))
+        return recieverEncr
+    else :
+        return rsa.encrypt(reciever.encode("utf8", pubKey))
 
 #Main encrypt engine
 def mainEncrypt(toEncrypt: int) -> int :             #takes a single int argument which must be the ascii representation of a char; returns the encrypted ascii
@@ -208,63 +222,69 @@ def mainEncrypt(toEncrypt: int) -> int :             #takes a single int argumen
 
 
 # Crypting the message
-def Zencrypt() :
+def encrypt(mode) :
     finalMessageBinary = list()
 
-    for i in range(len(message_input)) :
-        #Transforms the character in its ascii number
-        currentChr = message_input[i]
-        asciiChr = ord(currentChr)
+    if mode == "z" :
+        for i in range(len(message_input)) :
+            #Transforms the character in its ascii number
+            currentChr = message_input[i]
+            asciiChr = ord(currentChr)
 
-        #Spaces are encoded as is they were "~" (its ascii is 126) so to avoid errors, the programm does not support this character
-        if asciiChr == 126 :
-            printy("Error ! Your message contains a character that is not supported", "m")
-            break
+            #Spaces are encoded as is they were "~" (its ascii is 126) so to avoid errors, the programm does not support this character
+            if asciiChr == 126 :
+                printy("Error ! Your message contains a character that is not supported", "m")
+                break
 
-        asciiEncr = mainEncrypt(asciiChr)
-        letterBinary = list()
-        #If the Ascii number contains only two numbers, the programm adds a 0 in front oh the two to get a number with 3 binaires at the end
-        if len(str(asciiEncr)) == 2 :
-            letterBinary.append('00000000')
-            for asciiNbr in range(2) :
-                letterBinary.append(format(int(str(asciiEncr)[asciiNbr]), '08b'))
+            asciiEncr = mainEncrypt(asciiChr)
+            letterBinary = list()
+            #If the Ascii number contains only two numbers, the programm adds a 0 in front oh the two to get a number with 3 binaires at the end
+            if len(str(asciiEncr)) == 2 :
+                letterBinary.append('00000000')
+                for asciiNbr in range(2) :
+                    letterBinary.append(format(int(str(asciiEncr)[asciiNbr]), '08b'))
 
-        elif len(str(asciiEncr)) == 3 :
-            for asciiNbr in range(3) :
-                letterBinary.append(format(int(str(asciiEncr)[asciiNbr]), '08b'))
+            elif len(str(asciiEncr)) == 3 :
+                for asciiNbr in range(3) :
+                    letterBinary.append(format(int(str(asciiEncr)[asciiNbr]), '08b'))
 
-        assert(len(letterBinary) == 3)
+            assert(len(letterBinary) == 3)
 
-        letterBinary.append(';')                                       #Adds the separator (;) to create a difference between de letters
-        letter_str = ''
-        for x in range(4) :
-            letter_str += letterBinary[x]
+            letterBinary.append(';')                                       #Adds the separator (;) to create a difference between de letters
+            letter_str = ''
+            for x in range(4) :
+                letter_str += letterBinary[x]
 
-        finalMessageBinary.append(letter_str)
+            finalMessageBinary.append(letter_str)
 
-    printy("Your key is :", 'c', end = ' ')
-    printy(str(keyNum), 'c')
-    return finalMessageBinary
+        printy("Your key is :", 'c', end = ' ')
+        printy(str(keyNum), 'c')
+        return finalMessageBinary
+    else :
+        return rsa.encrypt(message_input.encode("utf8"), pubKey)
+
 
 
 #Get all settings and encrypted variables from child functions and starts the writeFile function to apply changes
 def prepareEncryptedOutput(cryptingMode: str) :
 
     if cryptingMode.lower() == "zcrypt" :
+        mode = "z"
         printy("Info : entering ZCrypt encryption mode...", "c")
-
         ZkeySetup()                          #creates a new key shared accross whole program
-        finalTimeEncr = ZencryptTime()
-        senderEncr = ZencryptSender()
-        recieverEncr = ZencryptReciever()
-        finalMessageBinary = Zencrypt()
-    else :
-        printy("Info : entering RSA encryption mode...", "c")
 
+    else :
+        mode = "RSA"
+        printy("Info : entering RSA encryption mode...", "c")
+        RkeySetup()
+
+    finalTimeEncr = encryptTime("z" if mode == "z" else "rsa")
+    senderEncr = encryptSender("z" if mode == "z" else "rsa")
+    recieverEncr = encryptReciever("z" if mode == "z" else "rsa")
+    finalMessageBinary = encrypt("z" if mode == "z" else "rsa")
 
 
     txt = False                      #boolean variable which is set to true when the file name specified by user is valid that's to say, ends with ".txt"
-    messageStr = "".join(finalMessageBinary)
 
     for letter in range(len(fileOutput)) :
         if fileOutput[letter] == '.' and fileOutput[letter + 1] == 't' and fileOutput[letter + 2] == 'x' and fileOutput[letter + 1] == 't' :
@@ -274,7 +294,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
         try :
             testfileOW = open(fileOutput, "r")            #opening in read mode the name specified by the user so that if a file with the same already exists, no error will be raised
         except FileNotFoundError :                         #else if an error is thrown, file was not found so no file will be overwritten -> writeFile
-            writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, messageStr)
+            writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, finalMessageBinary, mode)
 
         else :
             if warnBeforeOW :                          #boolean setting 1 -> warn user that a file will be overwritten
@@ -291,7 +311,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
                     printy("will be overwritten !! Proceed anyway ? (y/n)", 'y', end ='')
                     confirmation = input(" ")
                     if confirmation == "y" :
-                        writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, messageStr)    #after user confirmation that file can be overwritten -> writeFile
+                        writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, finalMessageBinaryn, mode)    #after user confirmation that file can be overwritten -> writeFile
                     else :
                         printy("OK. Encryption aborted", 'c') 
                 else :
@@ -299,7 +319,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
             
             #if the warning has been disabled
             else :
-                writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, messageStr)
+                writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, finalMessageBinary, mode)
                 printy("Note : a file has been overwritten", "y")
 
     else :
@@ -308,19 +328,24 @@ def prepareEncryptedOutput(cryptingMode: str) :
 
 
 #Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
-def writeFile(timeW: str, senderW: str, recipientW: str, keyW: str, messageW: str) :
+def writeFile(timeW: str or bytes, senderW: str or bytes, recipientW: str or bytes, keyW: str or rsa.PublicKey, messageW: list or bytes, mode: str) :
     #'\n' is used to go to a new line at every new file settings
-    file_w = open(fileOutput, "w")
+    file_w = open(fileOutput, "w" if mode == "z" else "wb")
     file_w.write(timeW)
     file_w.write("\n")
     file_w.write(senderW)
     file_w.write("\n")
     file_w.write(recipientW)
     file_w.write("\n")
-    file_w.write(keyW)
-    file_w.write("\n")
-    file_w.write(messageW)
-    file_w.close()
+    if mode == "z" :
+        file_w.write(keyW)
+        file_w.write("\n")
+        file_w.write("".join(messageW))
+        file_w.close()
+    else :
+        file_w.write("RSA\n".encode("utf8"))
+        file_w.write(messageW)
+        file_w.close()
 
     printy("Done ! Your message has been securely encrypted !", 'n')
 

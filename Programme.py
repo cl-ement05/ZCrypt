@@ -2,6 +2,7 @@ from datetime import datetime
 from calendar import day_name
 from random import randint
 from printy import printy, inputy
+import rsa
 
 file = ''
 Error_Code = str()
@@ -92,7 +93,7 @@ def fileCheck() -> bool :
 
 #Here all functions are defined
 #Gets the key which is encrypted in binary
-def keySettings() :
+def ZkeySettings() :
     key = line4
     global keyMethod
     global decryptKey
@@ -103,7 +104,7 @@ def keySettings() :
         keyMethod = 'minus'
 
 #Encrypts the key
-def keySetup() :
+def ZkeySetup() :
     global keyNum
     global keyBin
     global lastKey
@@ -133,7 +134,7 @@ def keySetup() :
 
 #All this part contains child functions used for encrypting
 #Encrypting date and time
-def encryptTime() :
+def ZencryptTime() :
     finalTimeEncr = ''
     finalTimeList = list()
     now = datetime.now()
@@ -160,7 +161,7 @@ def encryptTime() :
 
 
 #Encrypting sender
-def encryptSender() :
+def ZencryptSender() :
     senderEncr = ''
     for character in range(len(sender)) :
         senderAscii = ord(sender[character])
@@ -168,7 +169,7 @@ def encryptSender() :
     return senderEncr
 
 #Encrypts receiver
-def encryptReciever() :
+def ZencryptReciever() :
     recieverEncr = ''
     for character in range(len(reciever)) :        
         recieverAscii = ord(reciever[character])
@@ -207,7 +208,7 @@ def mainEncrypt(toEncrypt: int) -> int :             #takes a single int argumen
 
 
 # Crypting the message
-def encrypt() :
+def Zencrypt() :
     finalMessageBinary = list()
 
     for i in range(len(message_input)) :
@@ -247,12 +248,20 @@ def encrypt() :
 
 
 #Get all settings and encrypted variables from child functions and starts the writeFile function to apply changes
-def prepareEncryptedOutput() :
-    keySetup()                          #creates a new key shared accross whole program
-    finalTimeEncr = encryptTime()
-    senderEncr = encryptSender()
-    recieverEncr = encryptReciever()
-    finalMessageBinary = encrypt()
+def prepareEncryptedOutput(cryptingMode: str) :
+
+    if cryptingMode.lower() == "zcrypt" :
+        printy("Info : entering ZCrypt encryption mode...", "c")
+
+        ZkeySetup()                          #creates a new key shared accross whole program
+        finalTimeEncr = ZencryptTime()
+        senderEncr = ZencryptSender()
+        recieverEncr = ZencryptReciever()
+        finalMessageBinary = Zencrypt()
+    else :
+        printy("Info : entering RSA encryption mode...", "c")
+
+
 
     txt = False                      #boolean variable which is set to true when the file name specified by user is valid that's to say, ends with ".txt"
     messageStr = "".join(finalMessageBinary)
@@ -318,7 +327,7 @@ def writeFile(timeW: str, senderW: str, recipientW: str, keyW: str, messageW: st
 
 #All decrypt child functions
 #Decrypts the date and time
-def decryptTime() :
+def ZdecryptTime() :
     #Here, the entire line1 that contains the date is spread into different variables
     chSize = 2
     date = line1[:(chSize * 8)]
@@ -366,7 +375,7 @@ def decryptTime() :
 
     return dayDecrypted, monthDecrypted, yearDecrypted, hourDecrypted, minDecrypted, secDecrypted
 
-def decryptSender() :
+def ZdecryptSender() :
     senderEncr = line2
     senderDecr = ''
     for character in range(len(senderEncr)) :
@@ -377,7 +386,7 @@ def decryptSender() :
     return senderDecr
 
 
-def decryptReciever() :
+def ZdecryptReciever() :
     recieverEncr = line3
     recieverDecr = ''
     for character in range(len(recieverEncr)) :
@@ -417,7 +426,7 @@ def mainDecrypt(toencrypt: int) -> int :
     else : return decryptedAscii
 
 #decrypting message
-def decrypt() :
+def Zdecrypt() :
     finalDecrypted = ''
 
     nbr_letters = int(len(line5) / 25)
@@ -470,7 +479,7 @@ def printDecrypted(senderDecr: str, recieverDecr: str, finalDecrypted: str) :
     printy("We finished decrypting your file !", "n")
     print("")
 
-    dateDecr = decryptTime()
+    dateDecr = ZdecryptTime()
 
     finalEntireDate = ''
     #changing the final str according to what user specified for date format
@@ -699,7 +708,9 @@ while True :
         sender = input("Please type your name that will be used in the file as the sender information : ")
         reciever = input("Finally, type the reciever of this message : ")
 
-        prepareEncryptedOutput()
+        cryptMode = input("Do you want to crypt using ZCrypt algorithm or RSA (see Manual for details) ? (RSA/zcrypt) ")
+
+        prepareEncryptedOutput(cryptMode)
 
 
     elif command == "decrypt" :
@@ -708,8 +719,8 @@ while True :
         file_name = input()
         if fileCheck() :
             printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
-            keySettings()
-            printDecrypted(decryptSender(), decryptReciever(), decrypt())
+            ZkeySettings()
+            printDecrypted(ZdecryptSender(), ZdecryptReciever(), Zdecrypt())
         else :
             printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
             print("Aborting...")

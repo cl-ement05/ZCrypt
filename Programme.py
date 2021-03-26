@@ -18,7 +18,7 @@ outModeEncrypt = 0
 lastKey = 15                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 
 
-def fileCheck() -> bool :
+def ZfileCheck() -> bool :
 #All this section checks the file integrity and assings all the lines to a dynamic variable
     global line1
     global line2
@@ -90,6 +90,43 @@ def fileCheck() -> bool :
             return False
     
     return True
+
+def RfileCheck() :
+    global line1
+    global line2
+    global line3
+    global line4
+    global line5
+    global Error_Code
+
+    try :
+        file = open(file_name, 'rb+')
+    except FileNotFoundError :
+        Error_Code = "E101"
+        return False
+
+    else :
+        lines = list()
+        currentByte = file.read(1)
+        currentLine = bytes()
+
+        while currentByte != b"" :
+            try :
+                string = currentByte.decode("utf8")
+                if string == "\n" :
+                    lines.append(currentLine)
+                    currentLine = bytes()
+            except UnicodeDecodeError :
+                currentLine += currentByte
+            finally : 
+                currentByte = file.read(1)
+        
+        assert(len(lines)) == 5
+        line1 = lines[0]
+        line2 = lines[1]
+        line3 = lines[2]
+        line4 = lines[3]
+        line5 = lines[4]
 
 
 #Here all functions are defined
@@ -740,15 +777,21 @@ while True :
 
     elif command == "decrypt" :
         Error_Code = ""
+        decryptMode = input("Was your file encrypted with RSA or ZCrypt algorithm (ask the sender if you don't know) ? (RSA/zcrypt) ")
         printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
         file_name = input()
-        if fileCheck() :
-            printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
-            ZkeySettings()
-            printDecrypted(ZdecryptSender(), ZdecryptReciever(), Zdecrypt())
+        if decryptMode.lower() == "zcrypt" :
+            if ZfileCheck() :
+                printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
+                ZkeySettings()
+                printDecrypted(ZdecryptSender(), ZdecryptReciever(), Zdecrypt())
+            else :
+                printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
+                print("Aborting...")
         else :
-            printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
-            print("Aborting...")
+            RfileCheck()
+            printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
+
 
     elif command == "settings" :
         settings()

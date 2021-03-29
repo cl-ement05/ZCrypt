@@ -141,6 +141,20 @@ def ZkeySettings() :
     else :
         keyMethod = 'minus'
 
+def RkeySettings() :
+    nInput = input("Please enter the N value of your privKey")
+    eInput = input("Please enter the e value of your privKey")
+    dInput = input("Please enter the d value of your privKey")
+    pInput = input("Please enter the p value of your privKey")
+    qInput = input("Please enter the q value of your privKey")
+
+    try :
+        privKey = rsa.PrivateKey(int(nInput), int(eInput), int(dInput), int(pInput), int(qInput))
+    except :
+        printy("There was an error. Please make sure the numbers you entered are integers", "m")
+        return None
+    return privKey
+
 #Encrypts the key
 def ZkeySetup() :
     global keyNum
@@ -259,7 +273,7 @@ def mainEncrypt(toEncrypt: int) -> int :             #takes a single int argumen
 
 
 # Crypting the message
-def encrypt(mode) :
+def ZencryptMessage(mode) :
     finalMessageBinary = list()
 
     if mode == "z" :
@@ -318,7 +332,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
     finalTimeEncr = encryptTime("z" if mode == "z" else "rsa")
     senderEncr = encryptSender("z" if mode == "z" else "rsa")
     recieverEncr = encryptReciever("z" if mode == "z" else "rsa")
-    finalMessageBinary = encrypt("z" if mode == "z" else "rsa")
+    finalMessageBinary = ZencryptMessage("z" if mode == "z" else "rsa")
 
 
     txt = False                      #boolean variable which is set to true when the file name specified by user is valid that's to say, ends with ".txt"
@@ -488,7 +502,7 @@ def mainDecrypt(toencrypt: int) -> int :
     else : return decryptedAscii
 
 #decrypting message
-def Zdecrypt() :
+def ZdecryptMessage() :
     finalDecrypted = ''
 
     nbr_letters = int(len(line5) / 25)
@@ -515,9 +529,8 @@ def Zdecrypt() :
         finalDecrypted += chr(decryptedAscii)
     return finalDecrypted
 
-
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
-def printDecrypted(senderDecr: str, recieverDecr: str, finalDecrypted: str) :
+def printDecrypted(senderDecr: str, recieverDecr: str, finalDecrypted: str, dateDecr: tuple) :
     #list of the months to know which month number corresponds to what month -> used for date format plain text
     references = {
 
@@ -540,8 +553,6 @@ def printDecrypted(senderDecr: str, recieverDecr: str, finalDecrypted: str) :
 
     printy("We finished decrypting your file !", "n")
     print("")
-
-    dateDecr = ZdecryptTime()
 
     finalEntireDate = ''
     #changing the final str according to what user specified for date format
@@ -784,13 +795,16 @@ while True :
             if ZfileCheck() :
                 printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
                 ZkeySettings()
-                printDecrypted(ZdecryptSender(), ZdecryptReciever(), Zdecrypt())
+                printDecrypted(ZdecryptSender(), ZdecryptReciever(), ZdecryptMessage(), ZdecryptTime())
             else :
                 printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
                 print("Aborting...")
         else :
             RfileCheck()
             printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
+            privKey = RkeySettings()
+            if privKey != None :
+
 
 
     elif command == "settings" :

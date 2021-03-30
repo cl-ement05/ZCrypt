@@ -3,7 +3,6 @@ from calendar import day_name
 from random import randint
 from printy import printy, inputy
 import rsa
-from typing_extensions import final
 
 file = ''
 Error_Code = str()
@@ -127,6 +126,7 @@ def RfileCheck() :
         line3 = lines[2]
         line4 = lines[3]
         line5 = lines[4]
+        return True
 
 
 #Here all functions are defined
@@ -184,8 +184,10 @@ def ZkeySetup() :
     keyBin = format(keyNum, '08b')
 
 def RkeySetup() :
-    global privKey, pubKey
-    (pubKey, privKey) = rsa.newkeys(1024)
+    global privKey, pubKey, keyBin
+    (pubKey, privKey) = rsa.newkeys(512)
+    keyBin = pubKey          #sample value used to have 5 lines for all encrypted files no matter if it was encrypted with RSA or ZCrypt
+    print(privKey, pubKey)
 
 
 #All this part contains child functions used for encrypting
@@ -239,7 +241,7 @@ def encryptReciever(mode) :
             recieverEncr += chr(mainEncrypt(recieverAscii))
         return recieverEncr
     else :
-        return rsa.encrypt(reciever.encode("utf8", pubKey))
+        return rsa.encrypt(reciever.encode("utf8"), pubKey)
 
 #Main encrypt engine
 def mainEncrypt(toEncrypt: int) -> int :             #takes a single int argument which must be the ascii representation of a char; returns the encrypted ascii
@@ -362,7 +364,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
                     printy("will be overwritten !! Proceed anyway ? (y/n)", 'y', end ='')
                     confirmation = input(" ")
                     if confirmation == "y" :
-                        writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, finalMessageBinaryn, mode)    #after user confirmation that file can be overwritten -> writeFile
+                        writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, finalMessageBinary, mode)    #after user confirmation that file can be overwritten -> writeFile
                     else :
                         printy("OK. Encryption aborted", 'c') 
                 else :
@@ -382,18 +384,24 @@ def prepareEncryptedOutput(cryptingMode: str) :
 def writeFile(timeW: str or bytes, senderW: str or bytes, recipientW: str or bytes, keyW: str or rsa.PublicKey, messageW: list or bytes, mode: str) :
     #'\n' is used to go to a new line at every new file settings
     file_w = open(fileOutput, "w" if mode == "z" else "wb")
-    file_w.write(timeW)
-    file_w.write("\n")
-    file_w.write(senderW)
-    file_w.write("\n")
-    file_w.write(recipientW)
-    file_w.write("\n")
     if mode == "z" :
+        file_w.write(timeW)
+        file_w.write("\n")
+        file_w.write(senderW)
+        file_w.write("\n")
+        file_w.write(recipientW)
+        file_w.write("\n")
         file_w.write(keyW)
         file_w.write("\n")
         file_w.write("".join(messageW))
         file_w.close()
     else :
+        file_w.write(timeW)
+        file_w.write("\n".encode("utf8"))
+        file_w.write(senderW)
+        file_w.write("\n".encode("utf8"))
+        file_w.write(recipientW)
+        file_w.write("\n".encode("utf8"))
         file_w.write("RSA\n".encode("utf8"))
         file_w.write(messageW)
         file_w.close()
@@ -528,6 +536,13 @@ def ZdecryptMessage() :
 
         finalDecrypted += chr(decryptedAscii)
     return finalDecrypted
+
+def RmainDecrypt() :
+    try :
+        sender, recv, mess, name = rsa.decrypt(line2, privKey), rsa.decrypt(line3, privKey), rsa.decrypt(line5, privKey), rsa.decrypt(line1, privKey)
+    except rsa.DecryptionError :
+        printy("There was an error while decrypting your content. This is probably due to an invalid privateKey or corrputed data", "m")
+    printDecrypted(sender, recv, mess, name)
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
 def printDecrypted(senderDecr: str, recieverDecr: str, finalDecrypted: str, dateDecr: tuple) :
@@ -800,12 +815,13 @@ while True :
                 printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
                 print("Aborting...")
         else :
-            RfileCheck()
-            printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
-            privKey = RkeySettings()
-            if privKey != None :
-
-
+            if RfileCheck() : 
+                printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
+                privKey = RkeySettings()
+                sender = rsa.decrypt(line2, privKey)
+                if privKey != None :
+                    RmainDecrypt()
+            else : print("Error")
 
     elif command == "settings" :
         settings()

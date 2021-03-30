@@ -110,6 +110,7 @@ def RfileCheck() :
         currentLine = bytes()
 
         while currentByte != b"" :
+            print(currentByte)
             try :
                 string = currentByte.decode("utf8")
                 if string == "\n" :
@@ -120,12 +121,13 @@ def RfileCheck() :
             finally : 
                 currentByte = file.read(1)
         
-        assert(len(lines)) == 5
+        print(lines)
+        assert(len(lines)) == 4
         line1 = lines[0]
         line2 = lines[1]
         line3 = lines[2]
-        line4 = lines[3]
-        line5 = lines[4]
+        line5 = lines[3]
+        line4 = None      #since no key is stored on line 4 when using RSA crypt mode, not defining line4 could raise a NameError not defined so assigning None value
         return True
 
 
@@ -402,7 +404,6 @@ def writeFile(timeW: str or bytes, senderW: str or bytes, recipientW: str or byt
         file_w.write("\n".encode("utf8"))
         file_w.write(recipientW)
         file_w.write("\n".encode("utf8"))
-        file_w.write("RSA\n".encode("utf8"))
         file_w.write(messageW)
         file_w.close()
 

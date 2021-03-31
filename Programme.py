@@ -201,7 +201,7 @@ def ZkeySetup() :
 
 def RkeySetup() :
     global privKey, pubKey, keyBin
-    (pubKey, privKey) = rsa.newkeys(512)
+    (pubKey, privKey) = rsa.newkeys(1024)
     keyBin = pubKey          #sample value used to have 5 lines for all encrypted files no matter if it was encrypted with RSA or ZCrypt
     printy("Warning : here are your private key specs. DO NOT SHARE THEM UNLESS YOU KNOW WHAT YOU ARE DOING !", 'y')
     print("PrivateKey N : ", privKey.n)

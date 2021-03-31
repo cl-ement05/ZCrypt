@@ -166,7 +166,7 @@ def RkeySettings() :
 
     try :
         privKey = rsa.PrivateKey(int(n), int(e), int(d), int(p), int(q))
-    except :
+    except ValueError :
         printy("Error : please make sure the numbers you entered are integers", "m")
         return None
     return privKey

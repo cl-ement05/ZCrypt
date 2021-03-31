@@ -133,16 +133,40 @@ def ZkeySettings() :
         keyMethod = 'minus'
 
 def RkeySettings() :
-    nInput = input("Please enter the N value of your privKey : ")
-    eInput = input("Please enter the e value of your privKey : ")
-    dInput = input("Please enter the d value of your privKey : ")
-    pInput = input("Please enter the p value of your privKey : ")
-    qInput = input("Please enter the q value of your privKey : ")
+    printy("In order to decrypt a message that was encrypted with RSA, a private key is needed", "c")
+    printy("If you have saved it when encrypting your message, the private key specs will be automatically retrieved", "c")
+    printy("Otherwise you will need to remember and enter each value", "c")
+
+    print("Do you have your private key saved in a file ? (y/N) ", end = "")
+    if input("").lower() != "y" :
+        n = input("Please enter the N value of your privKey : ")
+        e = input("Please enter the e value of your privKey : ")
+        d = input("Please enter the d value of your privKey : ")
+        p = input("Please enter the p value of your privKey : ")
+        q = input("Please enter the q value of your privKey : ")
+    else :
+        fileNameInput = input("Please enter the COMPLETE name of the file which contains the private key (must end with .txt) : ")
+        try : 
+            file = open(fileNameInput, "r")
+            keys = file.readlines()
+            try :
+                n = int(keys[0])
+                e = int(keys[1])
+                d = int(keys[2])
+                p = int(keys[3])
+                q = int(keys[4])
+            except ValueError :
+                printy("Error : this file does not contain valid data about the private key", "m")
+                return None
+
+        except FileNotFoundError : 
+            printy("Error : this file does not exist", "m")
+            return None
 
     try :
-        privKey = rsa.PrivateKey(int(nInput), int(eInput), int(dInput), int(pInput), int(qInput))
+        privKey = rsa.PrivateKey(int(n), int(e), int(d), int(p), int(q))
     except :
-        printy("There was an error. Please make sure the numbers you entered are integers", "m")
+        printy("Error : please make sure the numbers you entered are integers", "m")
         return None
     return privKey
 
@@ -866,6 +890,7 @@ while True :
                 privKey = RkeySettings()
                 if privKey != None :
                     RmainDecrypt()
+                else : print("Aborting...")
             else : print("Error")
 
     elif command == "settings" :

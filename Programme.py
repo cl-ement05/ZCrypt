@@ -134,7 +134,7 @@ def ZkeySettings() :
 
 def RkeySettings() :
     printy("In order to decrypt a message that was encrypted with RSA, a private key is needed", "c")
-    printy("If you have saved it when encrypting your message, the private key specs will be automatically retrieved", "c")
+    printy("If you saved it when encrypting your message, the private key specs will be automatically retrieved", "c")
     printy("Otherwise you will need to remember and enter each value", "c")
 
     print("Do you have your private key saved in a file ? (y/N) ", end = "")
@@ -150,12 +150,13 @@ def RkeySettings() :
             file = open(fileNameInput, "r")
             keys = file.readlines()
             try :
+                assert(len(keys) == 5)
                 n = int(keys[0])
                 e = int(keys[1])
                 d = int(keys[2])
                 p = int(keys[3])
                 q = int(keys[4])
-            except ValueError :
+            except (ValueError, AssertionError) :
                 printy("Error : this file does not contain valid data about the private key", "m")
                 return None
 
@@ -891,7 +892,7 @@ while True :
                 if privKey != None :
                     RmainDecrypt()
                 else : print("Aborting...")
-            else : print("Error")
+            else : printy("Error : file not found or corrupted", "m")
 
     elif command == "settings" :
         settings()

@@ -199,7 +199,7 @@ def encryptTime(mode) :
         for element in range(len(current_time)) :
             #This try is used to skip date characters like (/ and :) that cannot be encrypted and will be removed
             try :
-                test = int(current_time[element])
+                int(current_time[element])
             except ValueError :
                 if current_time[element] != '/' and current_time[element] != ':' and current_time[element] != ' ' :
                     printy("Sorry there was an error. Please try again", "m")
@@ -351,7 +351,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
 
     if txt :
         try :
-            testfileOW = open(fileOutput, "r")            #opening in read mode the name specified by the user so that if a file with the same already exists, no error will be raised
+            open(fileOutput, "r")            #opening in read mode the name specified by the user so that if a file with the same already exists, no error will be raised
         except FileNotFoundError :                         #else if an error is thrown, file was not found so no file will be overwritten -> writeFile
             if mode == "z" : writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin)
             else : writeFile(mode, finalMessageBinary)
@@ -895,7 +895,7 @@ while True :
         print("Enjoy !")
 
     elif command == 'exit' :
-        printy("Thanks for using ZCrypt ! See you soon...", "c")
+        printy("Thank you for using ZCrypt ! See you soon...", "c")
         exit()
     
     else :

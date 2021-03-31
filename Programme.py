@@ -661,9 +661,9 @@ def printDecrypted(finalDecrypted: str, senderDecr: str = None, recieverDecr: st
                 "Timestamp" : (finalEntireDate + ' at ' + finalEntireTime if senderDecr != None else None), 
                 "Sender" : senderDecr,
                 "Reciever" : recieverDecr,
-                "Message" : (finalDecrypted if senderDecr == None else finalDecrypted.decode("utf8"))
+                "Message" : (finalDecrypted if senderDecr != None else finalDecrypted.decode("utf8"))
             })
-    else : printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
+    else : printOutMode(senderDecr, recieverDecr, (finalDecrypted if senderDecr != None else finalDecrypted.decode("utf8")), finalEntireDate, finalEntireTime)
 
 
 def printOutMode(senderDecr, recieverDecr, finalDecrypted, date, time) :
@@ -677,7 +677,7 @@ def printOutMode(senderDecr, recieverDecr, finalDecrypted, date, time) :
         printy(recieverDecr + " should recieve it !", "c>")
         print("")
 
-    printy("The message is : " + finalDecrypted.decode("utf8"), "c>")
+    printy("The message is : " + finalDecrypted, "c>")
 
     print("")
 

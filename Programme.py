@@ -13,6 +13,7 @@ dateFormat = '1'
 warnBeforeOW = True
 outModeEncrypt = 0
 encryptionMode = "ask"
+rsaKeyBytes = 1024
 
 lastKey = 15                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 
@@ -201,7 +202,8 @@ def ZkeySetup() :
 
 def RkeySetup() :
     global privKey, pubKey, keyBin
-    (pubKey, privKey) = rsa.newkeys(1024)
+    printy("Info : generating RSA keys", 'c')
+    (pubKey, privKey) = rsa.newkeys(rsaKeyBytes)
     keyBin = pubKey          #sample value used to have 5 lines for all encrypted files no matter if it was encrypted with RSA or ZCrypt
     printy("Warning : here are your private key specs. DO NOT SHARE THEM UNLESS YOU KNOW WHAT YOU ARE DOING !", 'y')
     print("PrivateKey N : ", privKey.n)
@@ -720,6 +722,7 @@ def settings() :
     global warnBeforeOW
     global outModeEncrypt
     global encryptionMode
+    global rsaKeyBytes
     print("")
 
     dateFormatDict = {
@@ -736,7 +739,8 @@ def settings() :
     printy("    - 2: date display format", "c")
     printy("    - 3: warn before overwrite", "c")
     printy("    - 4: encrypted content output mode", "c")
-    printy("    - 5: encryption and decryption algorithm\n", "c")
+    printy("    - 5: encryption and decryption algorithm", "c")
+    printy("    - 6: RSA keys size (number of bits)\n", "c")
 
     printy("If you want to see the current value of an option, type \"see\" followed by the number linked to the option", "c")
     printy("If you want to change this value, type \"set\" followed by the number linked to the option", "c")
@@ -765,6 +769,10 @@ def settings() :
                 if encryptionMode == "ask" : printy("ZCrypt will always ask you if you want to encrypt a message using ZCrypt algorithm or RSA", 'c')
                 elif encryptionMode == "RSA" : printy("ZCrypt will always encrypt using RSA", "c")
                 else : printy("ZCrypt will always encrypt your messages using ZCrypt algorithm")
+
+            elif settingsCmd[4] == '6' :
+                printy("RSA uses public and private keys to encrypt/decrypt content. These keys are made of very high numbers (more than 20 digits)", "c")
+                printy("Currently RSA keys have a length of " + str(rsaKeyBytes) + " bits", "c")
             
             else :
                 printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
@@ -833,7 +841,24 @@ def settings() :
                 else : 
                     printy("The value you entered is not valid. Please note that ZCrypt has been saved as default value", "m")
                     encryptionMode = "zcrypt"
-            
+
+            elif settingsCmd[4] == '6' :
+                printy("RSA uses public and private keys to encrypt/decrypt content. These keys are made of very high numbers (more than 20 digits)", "c")
+                printy("You can set the length of these numbers by entering the number of bits which must be a pow of 2 (256, 512, 1024, 2048...)", "c")
+                printy("The highest number of bits, the higher security but also the longer time to generate the keys", "c")
+                printy("By default this value is set to 1024. We do not recommend to enter a number lower than 256 (too low encryption) and higher than 4096 (your computer could take minutes to generate keys)", "c")
+                choice = input("Input : ")
+                try :
+                    choice = int(choice)
+                    if choice > 4096 or choice < 256 :
+                        printy("Warning : you entered non-recomended values. Expect low security/crashes/slowness when generating keys", 'y')
+                        rsaKeyBytes = choice
+                    else :
+                        rsaKeyBytes = choice
+                        printy("Success : set RSA keys length to " + str(choice) + " bytes", 'n')
+                except ValueError :
+                    printy("Error : please enter an integer", "m")
+
             else :
                 printy("Error : the option you tried to view does not exists or does have a number assigned to it", "m")
 

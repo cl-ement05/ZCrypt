@@ -178,7 +178,12 @@ def RkeySetup() :
     global privKey, pubKey, keyBin
     (pubKey, privKey) = rsa.newkeys(512)
     keyBin = pubKey          #sample value used to have 5 lines for all encrypted files no matter if it was encrypted with RSA or ZCrypt
-    print(privKey, pubKey)
+    printy("Here are your private key specs. DO NOT SHARE THEM UNLESS YOU KNOW WHAT YOU ARE DOING !", 'y')
+    print("PrivateKey N : ", privKey.n)
+    print("PrivateKey e : ", privKey.e)
+    print("PrivateKey d : ", privKey.d)
+    print("PrivateKey p : ", privKey.p)
+    print("PrivateKey q : ", privKey.q)
 
 
 #All this part contains child functions used for encrypting
@@ -803,6 +808,7 @@ while True :
         printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
         file_name = input()
         if decryptMode.lower() == "zcrypt" :
+            printy("Info : entering ZCrypt decryption mode...", "c")
             if ZfileCheck() :
                 printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
                 ZkeySettings()
@@ -811,6 +817,7 @@ while True :
                 printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
                 print("Aborting...")
         else :
+            printy("Info : entering RSA decryption mode...", "c")
             if RfileCheck() : 
                 printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
                 privKey = RkeySettings()

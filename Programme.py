@@ -11,7 +11,6 @@ Error_Code = str()
 fileOutput = "Mail.txt"
 dateFormat = '1'
 warnBeforeOW = True
-defaultName = "Decryted.txt"
 outModeEncrypt = 0
 encryptionMode = "ask"
 
@@ -185,6 +184,27 @@ def RkeySetup() :
     print("PrivateKey d : ", privKey.d)
     print("PrivateKey p : ", privKey.p)
     print("PrivateKey q : ", privKey.q)
+    printy("\nWarning : you will need to provide these numbers in order to decrypt your message", "y")
+    printy("Since they are very long, so hard to remeber, ZCrypt provides you an option to save them", "c")
+    printy("Do you want to save your private key to a text file ? (Y/n) ", "c", end = ' ')
+    answer = input("")
+    if answer != "n" :
+        printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
+        printy("If the name you enter is not a valid one, keys.txt", 'c', end = ' ')
+        printy("will be used", 'c')
+        fileNameInput = inputy("Enter file name : ")
+        print("")
+        fileName = checkFileName(fileNameInput, "keys.txt")
+        printy("Info : saving private key...", "c")
+        file = open(fileName, "w")
+        file.write(str(privKey.n) + "\n")
+        file.write(str(privKey.e) + "\n")
+        file.write(str(privKey.d) + "\n")
+        file.write(str(privKey.p) + "\n")
+        file.write(str(privKey.q))
+        file.close()
+        printy("Success : saved private key specs to " + fileName, "n")
+
 
 
 #All this part contains child functions used for encrypting
@@ -310,7 +330,7 @@ def ZencryptMessage(mode, message_input) :
 
             finalMessageBinary.append(letter_str)
 
-        printy("Info : Your key is : " + keyNum, 'c')
+        printy("Info : Your key is : " + str(keyNum), 'c')
         return finalMessageBinary
     else :
         return rsa.encrypt(message_input.encode("utf8"), pubKey)
@@ -637,27 +657,32 @@ def printOutMode(senderDecr, recieverDecr, finalDecrypted, date, time) :
 
 def saveToExtFile(dico: dict) :
     print("")
+    defaultName = "Decrypted.txt"
     printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
     printy("If the name you enter is not a valid one, the default name,", 'c', end = ' ')
     printy(defaultName, 'c', end = ' ')
     printy("will be used", 'c')
-    filename = inputy("Enter file name : ")
+    fileNameInput = inputy("Enter file name : ")
     print("")
     
-    #because e.g. filname is "abc" then abc[-4:] returns "abc" and ".txt" is 4 char long so in order to have a valid name both len() > 4 and ends with ".txt" is required 
-    if not (len(filename) > 4 and filename[-4:] == ".txt") :
-        printy("Error : the name you entered is not valid", 'm')
-        printy("Warning : " + defaultName + " will be used instead", "y")
-        filename = defaultName
+    fileName = checkFileName(fileNameInput, defaultName)
     
-    fileToWrite = open(filename, 'w')
+    fileToWrite = open(fileName, 'w')
     for element in dico.keys() :
         if dico[element] != None :                                        #used to avoid writing None elements i.e. in RSA mode where sender reciever and time = None
             fileToWrite.write(element + " : " + dico[element] + "\n")
     fileToWrite.close()
 
-    printy("Success : decrypted data has been saved to " + filename, 'n')
+    printy("Success : decrypted data has been saved to " + fileName, 'n')
 
+
+def checkFileName(filename, defaultName) :
+    #because e.g. filname is "abc" then abc[-4:] returns "abc" and ".txt" is 4 char long so in order to have a valid name both len() > 4 and ends with ".txt" is required
+    if not (len(filename) > 4 and filename[-4:] == ".txt") :
+        printy("Error : the name you entered is not valid", 'm')
+        printy("Warning : " + defaultName + " will be used instead", "y")
+        return defaultName
+    else : return filename
 
 def findDayDate(date) :
     dayNumber = datetime.strptime(date, '%d %m %Y').weekday()

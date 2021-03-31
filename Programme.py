@@ -133,11 +133,11 @@ def ZkeySettings() :
         keyMethod = 'minus'
 
 def RkeySettings() :
-    nInput = input("Please enter the N value of your privKey")
-    eInput = input("Please enter the e value of your privKey")
-    dInput = input("Please enter the d value of your privKey")
-    pInput = input("Please enter the p value of your privKey")
-    qInput = input("Please enter the q value of your privKey")
+    nInput = input("Please enter the N value of your privKey : ")
+    eInput = input("Please enter the e value of your privKey : ")
+    dInput = input("Please enter the d value of your privKey : ")
+    pInput = input("Please enter the p value of your privKey : ")
+    qInput = input("Please enter the q value of your privKey : ")
 
     try :
         privKey = rsa.PrivateKey(int(nInput), int(eInput), int(dInput), int(pInput), int(qInput))
@@ -529,13 +529,13 @@ def ZdecryptMessage() :
 
 def RmainDecrypt() :
     try :
-        sender, recv, mess, name = rsa.decrypt(line2, privKey), rsa.decrypt(line3, privKey), rsa.decrypt(line5, privKey), rsa.decrypt(line1, privKey)
+        mess = rsa.decrypt(line5, privKey)
     except rsa.DecryptionError :
         printy("There was an error while decrypting your content. This is probably due to an invalid privateKey or corrputed data", "m")
-    printDecrypted(sender, recv, mess, name)
+    printDecrypted(mess)
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
-def printDecrypted(senderDecr: str, recieverDecr: str, finalDecrypted: str, dateDecr: tuple) :
+def printDecrypted(finalDecrypted: str, senderDecr: str = None, recieverDecr: str = None, dateDecr: tuple = None) :
     #list of the months to know which month number corresponds to what month -> used for date format plain text
     references = {
 
@@ -559,34 +559,35 @@ def printDecrypted(senderDecr: str, recieverDecr: str, finalDecrypted: str, date
     printy("We finished decrypting your file !", "n")
     print("")
 
-    finalEntireDate = ''
-    #changing the final str according to what user specified for date format
-    if dateFormat == '1' :
-        finalEntireDate = dateDecr[0] + '/' + dateDecr[1] + '/' + dateDecr[2]
-    elif dateFormat == '2' :
-        finalEntireDate = dateDecr[0] + '/' + dateDecr[1] + '/' + dateDecr[2][2:4]
-    elif dateFormat == '3' :
-        finalEntireDate = dateDecr[2] + '/' + dateDecr[1] + '/' + dateDecr[0]
-    elif dateFormat == '4' :
-        month_text = references['months'][dateDecr[1]]
-        
-        #Used to find the day of the week with the date number
-        dayWeek = findDayDate(dateDecr[0] + ' ' + dateDecr[1] + ' ' + dateDecr[2])
+    finalEntireDate, finalEntireTime = '', ''
+        #changing the final str according to what user specified for date format
+    if dateDecr != None :
+        if dateFormat == '1' :
+            finalEntireDate = dateDecr[0] + '/' + dateDecr[1] + '/' + dateDecr[2]
+        elif dateFormat == '2' :
+            finalEntireDate = dateDecr[0] + '/' + dateDecr[1] + '/' + dateDecr[2][2:4]
+        elif dateFormat == '3' :
+            finalEntireDate = dateDecr[2] + '/' + dateDecr[1] + '/' + dateDecr[0]
+        elif dateFormat == '4' :
+            month_text = references['months'][dateDecr[1]]
+            
+            #Used to find the day of the week with the date number
+            dayWeek = findDayDate(dateDecr[0] + ' ' + dateDecr[1] + ' ' + dateDecr[2])
 
-        #This part analysis what is the day and adds the 'th', 'st'... at the end
-        completeDay = ''
-        if dateDecr[0] == 1 :
-            completeDay = dateDecr[0] + 'st'
-        elif dateDecr[0] == 2 :
-            completeDay = dateDecr[0] + 'nd'
-        elif dateDecr[0] == 3 :
-            completeDay = dateDecr[0] + 'rd'
-        else :
-            completeDay = dateDecr[0] + 'th'
-        
-        finalEntireDate = dayWeek + ", " + month_text + " the " + completeDay + " " + dateDecr[2]
-        
-    finalEntireTime = dateDecr[3] + ':' + dateDecr[4] + ':' + dateDecr[5]
+            #This part analysis what is the day and adds the 'th', 'st'... at the end
+            completeDay = ''
+            if dateDecr[0] == 1 :
+                completeDay = dateDecr[0] + 'st'
+            elif dateDecr[0] == 2 :
+                completeDay = dateDecr[0] + 'nd'
+            elif dateDecr[0] == 3 :
+                completeDay = dateDecr[0] + 'rd'
+            else :
+                completeDay = dateDecr[0] + 'th'
+            
+            finalEntireDate = dayWeek + ", " + month_text + " the " + completeDay + " " + dateDecr[2]
+            
+        finalEntireTime = dateDecr[3] + ':' + dateDecr[4] + ':' + dateDecr[5]
     
     if outModeEncrypt == 0 :
         choiceMode = inputy("Would you like to output the encrypted content to be saved to a file or simply to be displayed on screen ? (FILE/print) ", "c")
@@ -595,22 +596,31 @@ def printDecrypted(senderDecr: str, recieverDecr: str, finalDecrypted: str, date
             printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
         else :
             printy("OK. Entering file mode...")
+            if senderDecr != None :    
+                saveToExtFile(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
+            else :
+                printy("Saving decrypted content to external file is not supported in RSA mode", 'm')
+    
+    elif outModeEncrypt == 1 : 
+        if senderDecr != None :    
             saveToExtFile(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
-    elif outModeEncrypt == 1 : saveToExtFile(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
+        else :
+            printy("Saving decrypted content to external file is not supported in RSA mode", 'm')
     else : printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
 
 
 def printOutMode(senderDecr, recieverDecr, finalDecrypted, date, time) :
-    printy("This message was created " + date + ' at ' + time, "c>")
-    print("")
+    if senderDecr != None and recieverDecr != None and date != '' and time != '' :
+        printy("This message was created " + date + ' at ' + time, "c>")
+        print("")
 
-    printy(senderDecr + " sent it !", "c>")
-    print("")
+        printy(senderDecr + " sent it !", "c>")
+        print("")
 
-    printy(recieverDecr + " should recieve it !", "c>")
-    print("")
+        printy(recieverDecr + " should recieve it !", "c>")
+        print("")
 
-    printy("And the message is : " + finalDecrypted, "c>")
+    printy("The message is : " + finalDecrypted.decode("utf8"), "c>")
 
     print("")
 
@@ -645,7 +655,7 @@ def saveToExtFile(senderDecr, recieverDecr, finalDecrypted, date, time) :
     fileToWrite.write(finalDecrypted)
     fileToWrite.close()
 
-    printy("All the decrypted data has been securely saved to", 'c', end = ' ')
+    printy("All the decrypted data has been saved to", 'c', end = ' ')
     printy(filename, 'c')
 
 
@@ -741,8 +751,8 @@ def settings() :
                 printy("3 values are available for this setting : 0, 1 and 2", "c")
                 printy("If you choose 0, ZCrypt will always ask you if you want to save to a file or just show the content on screen", "c")
                 printy("If you choose 1, ZCrypt will always save your encrypted content to a file, here " + fileOutput, "c")
-                printy("Note : mode 1 works just like ZCypt used to function in releases before V2.3", 'c')
                 printy("If you choose 2, ZCrypt will always output your encrypted content to your screen", "c")
+                printy("Note : mode 2 works just like ZCypt used to function in releases before V2.3", 'c')
                 choice = inputy("Input :  ")
                 try :
                     if 0 <= int(choice) <= 2 : 
@@ -796,7 +806,7 @@ while True :
             if ZfileCheck() :
                 printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
                 ZkeySettings()
-                printDecrypted(ZdecryptSender(), ZdecryptReciever(), ZdecryptMessage(), ZdecryptTime())
+                printDecrypted(ZdecryptMessage(), ZdecryptSender(), ZdecryptReciever(), ZdecryptTime())
             else :
                 printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
                 print("Aborting...")

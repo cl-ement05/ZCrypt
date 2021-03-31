@@ -179,7 +179,7 @@ def RkeySetup() :
     global privKey, pubKey, keyBin
     (pubKey, privKey) = rsa.newkeys(512)
     keyBin = pubKey          #sample value used to have 5 lines for all encrypted files no matter if it was encrypted with RSA or ZCrypt
-    printy("Here are your private key specs. DO NOT SHARE THEM UNLESS YOU KNOW WHAT YOU ARE DOING !", 'y')
+    printy("Warning : here are your private key specs. DO NOT SHARE THEM UNLESS YOU KNOW WHAT YOU ARE DOING !", 'y')
     print("PrivateKey N : ", privKey.n)
     print("PrivateKey e : ", privKey.e)
     print("PrivateKey d : ", privKey.d)
@@ -202,7 +202,7 @@ def encryptTime(mode) :
                 int(current_time[element])
             except ValueError :
                 if current_time[element] != '/' and current_time[element] != ':' and current_time[element] != ' ' :
-                    printy("Sorry there was an error. Please try again", "m")
+                    printy("Error : runtime error. Please try again", "m")
                     exit()
 
             #If the try passes and the current element is an integer (so a number that is part from the date), encyption starts
@@ -286,7 +286,7 @@ def ZencryptMessage(mode, message_input) :
 
             #Spaces are encoded as is they were "~" (its ascii is 126) so to avoid errors, the programm does not support this character
             if asciiChr == 126 :
-                printy("Error ! Your message contains a character that is not supported", "m")
+                printy("Error : your message contains a character that is not supported", "m")
                 break
 
             asciiEncr = mainEncrypt(asciiChr)
@@ -310,8 +310,7 @@ def ZencryptMessage(mode, message_input) :
 
             finalMessageBinary.append(letter_str)
 
-        printy("Your key is :", 'c', end = ' ')
-        printy(str(keyNum), 'c')
+        printy("Info : Your key is : " + keyNum, 'c')
         return finalMessageBinary
     else :
         return rsa.encrypt(message_input.encode("utf8"), pubKey)
@@ -357,12 +356,10 @@ def prepareEncryptedOutput(cryptingMode: str) :
             else : writeFile(mode, finalMessageBinary)
         else :
             if warnBeforeOW :                          #boolean setting 1 -> warn user that a file will be overwritten
-                printy("Warning !", 'y', end = ' ')
-                printy(fileOutput, 'y', end = ' ')
-                printy("already exists.", 'y')
-                printy("If you continue the encryption process, the existing file will be overwritten", 'y')
-                printy("This will irremediably delete its current data", 'y')
-                printy("We highly recommend you to backup this file if personnal infos are stored on it", 'y')
+                printy("Warning : " + fileOutput + " already exists", 'y')
+                printy("Warning : if you continue the encryption process, the existing file will be overwritten", 'y')
+                printy("Note : this operation cannot be undone", 'c')
+                printy("Note : we highly recommend you to backup this file if personnal infos are stored on it", 'c')
                 printy("Are you sure you want to continue ? (y/n)", 'y', end = '')
                 firstanswer = input(" ")
                 if firstanswer == "y" :
@@ -373,9 +370,9 @@ def prepareEncryptedOutput(cryptingMode: str) :
                         if mode == "z" : writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin)
                         else : writeFile(mode, finalMessageBinary)    #after user confirmation that file can be overwritten -> writeFile
                     else :
-                        printy("OK. Encryption aborted", 'c') 
+                        printy("Info : encryption aborted", 'c') 
                 else :
-                    printy("OK. Encryption aborted", 'c')     
+                    printy("Info : encryption aborted", 'c')     
             
             #if the warning has been disabled
             else :
@@ -384,7 +381,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
                 printy("Note : a file has been overwritten", "y")
 
     else :
-        printy("Error ! The name of the file you want to save is incorect. Please try another one !", 'm')
+        printy("Error : the name of the file you want to save is incorect. Please try another one !", 'm')
 
 
 
@@ -403,7 +400,7 @@ def writeFile(mode: str, messageW: list or bytes, *args: str or bytes) :
         file_w.write(messageW)
         file_w.close()
 
-    printy("Done ! Your message has been securely encrypted !", 'n')
+    printy("Success : your message has been securely encrypted !", 'n')
 
 
 #All decrypt child functions
@@ -538,7 +535,7 @@ def RmainDecrypt() :
     try :
         mess = rsa.decrypt(line5, privKey)
     except rsa.DecryptionError :
-        printy("There was an error while decrypting your content. This is probably due to an invalid privateKey or corrputed data", "m")
+        printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
     printDecrypted(mess)
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
@@ -563,7 +560,7 @@ def printDecrypted(finalDecrypted: str, senderDecr: str = None, recieverDecr: st
 
         }
 
-    printy("We finished decrypting your file !", "n")
+    printy("Success : file decrypting finished", "n")
     print("")
 
     finalEntireDate, finalEntireTime = '', ''
@@ -599,10 +596,10 @@ def printDecrypted(finalDecrypted: str, senderDecr: str = None, recieverDecr: st
     if outModeEncrypt == 0 :
         choiceMode = inputy("Would you like to output the encrypted content to be saved to a file or simply to be displayed on screen ? (FILE/print) ", "c")
         if choiceMode == "print" :
-            printy("OK. Entering print mode...")
+            printy("Info : entering print mode...")
             printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
         else :
-            printy("OK. Entering file mode...")
+            printy("Info : entering file mode...")
             saveToExtFile(
             {
                 "Timestamp" : (finalEntireDate + ' at ' + finalEntireTime if senderDecr != None else None),
@@ -649,9 +646,8 @@ def saveToExtFile(dico: dict) :
     
     #because e.g. filname is "abc" then abc[-4:] returns "abc" and ".txt" is 4 char long so in order to have a valid name both len() > 4 and ends with ".txt" is required 
     if not (len(filename) > 4 and filename[-4:] == ".txt") :
-        printy("Error the name you entered is not valid", 'm')
-        printy(defaultName, "y", end = " ")
-        printy("will be used instead" ,'y')
+        printy("Error : the name you entered is not valid", 'm')
+        printy("Warning : " + defaultName + " will be used instead", "y")
         filename = defaultName
     
     fileToWrite = open(filename, 'w')
@@ -660,8 +656,7 @@ def saveToExtFile(dico: dict) :
             fileToWrite.write(element + " : " + dico[element] + "\n")
     fileToWrite.close()
 
-    printy("All the decrypted data has been saved to", 'c', end = ' ')
-    printy(filename, 'c')
+    printy("Success : decrypted data has been saved to " + filename, 'n')
 
 
 def findDayDate(date) :
@@ -728,7 +723,7 @@ def settings() :
         elif 'set' in settingsCmd and len(settingsCmd) == 5 :
             if settingsCmd[4] == '1' :
                 fileOutput = input("Please enter the name of file you want to be saved as. Don't forget to ad (.txt) at the end ! : ")
-                printy("Done ! The name of the output file has been successfully changed to", "n", end = ' ')
+                printy("Sucess : the name of the output file has been successfully changed to", "n", end = ' ')
                 printy(fileOutput, 'n')
 
             elif settingsCmd[4] == '2' :
@@ -737,10 +732,10 @@ def settings() :
                 try :
                     if int(choice) <= 4 and int(choice) > 0 :
                         dateFormat = choice
-                        printy('Successfully set date format to ' + dateFormatDict[choice], 'n')
+                        printy('Success : set date format to ' + dateFormatDict[choice], 'n')
                     else :
-                        printy("Error ! " + choice + " is not an offered choice", 'm')
-                except ValueError : printy("Please enter an integer", "m")
+                        printy("Error : " + choice + " is not an offered choice", 'm')
+                except ValueError : printy("Error : Please enter an integer", "m")
 
             elif settingsCmd[4] == '3' :
                 printy("Sometimes when you encrypt a file, another file with the same name already exists", 'c')
@@ -769,10 +764,10 @@ def settings() :
                 try :
                     if 0 <= int(choice) <= 2 : 
                         outModeEncrypt = int(choice)
-                        printy("Successfully set output mode to " + choice, 'n')
-                    else : printy(choice + " is not an offered choice", "m")
+                        printy("Success : set output mode to " + choice, 'n')
+                    else : printy("Error : " + choice + " is not an offered choice", "m")
                 except ValueError :
-                    printy("Please enter an integer", "m")
+                    printy("Error : please enter an integer", "m")
 
             elif settingsCmd[4] == '5' :
                 printy("ZCrypt offers you 2 different encryption algorithms for encrypting your messages", "c")
@@ -790,14 +785,14 @@ def settings() :
                     encryptionMode = "zcrypt"
             
             else :
-                printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
+                printy("Error : the option you tried to view does not exists or does have a number assigned to it", "m")
 
 
         elif settingsCmd == 'exit' :
             break
 
         else :
-            printy("Error ! Either this command is unknown either it does not use the needed format ! See the manual to learn more ", "m")
+            printy("Error : either this command is unknown either it does not use the needed format ! See the manual to learn more ", "m")
     
 
 

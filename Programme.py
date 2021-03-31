@@ -13,6 +13,7 @@ dateFormat = '1'
 warnBeforeOW = True
 defaultName = "Decryted.txt"
 outModeEncrypt = 0
+encryptionMode = "ask"
 
 lastKey = 15                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 
@@ -674,6 +675,7 @@ def settings() :
     global dateFormat
     global warnBeforeOW
     global outModeEncrypt
+    global encryptionMode
     print("")
 
     dateFormatDict = {
@@ -689,7 +691,8 @@ def settings() :
     printy("    - 1: encrypted file name", "c")
     printy("    - 2: date display format", "c")
     printy("    - 3: warn before overwrite", "c")
-    printy("    - 4: encrypted content output mode\n", "c")
+    printy("    - 4: encrypted content output mode", "c")
+    printy("    - 5: encryption and decryption algorithm\n", "c")
 
     printy("If you want to see the current value of an option, type \"see\" followed by the number linked to the option", "c")
     printy("If you want to change this value, type \"set\" followed by the number linked to the option", "c")
@@ -708,11 +711,16 @@ def settings() :
 
             elif settingsCmd[4] == '3' :
                 print(("Warning before overwrite is currently enabled" if warnBeforeOW else "No warning will be shown before you overwrite an existing file"))
+            
             elif settingsCmd[4] == '4' :
                 if outModeEncrypt != 0 :
                      printy("Any content you encrypt will be outputed to " + (file_name if outModeEncrypt == 1 else "screen directly"), "c")
                 else : printy("ZCrypt will always ask you if you want to save your encrypted content to a file or if you want to print it on screen", "c")
-
+            
+            elif settingsCmd[4] == '5' :
+                if encryptionMode == "ask" : printy("ZCrypt will always ask you if you want to encrypt a message using ZCrypt algorithm or RSA", 'c')
+                elif encryptionMode == "RSA" : printy("ZCrypt will always encrypt using RSA", "c")
+                else : printy("ZCrypt will always encrypt your messages using ZCrypt algorithm")
             
             else :
                 printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
@@ -743,7 +751,7 @@ def settings() :
                 printy("If you have to save files often, these warning may bore you. If this is so you can disable this warning by typing \"disable\"", 'c')
                 printy("You don't want to disable this warning type anything except \"disable\"", 'c')
                 printy("Please be careful when disabling this warning. You could lose important data and ZCrypt assumes no responsability in this. Do it at your own risk", 'm')
-                testdisable = inputy("Input : ")
+                testdisable = input("Input : ")
                 if testdisable == "disable" :
                     printy("Caution : Warning before overwrite is now disabled", 'y')
                     warnBeforeOW = False
@@ -758,7 +766,7 @@ def settings() :
                 printy("If you choose 1, ZCrypt will always save your encrypted content to a file, here " + fileOutput, "c")
                 printy("If you choose 2, ZCrypt will always output your encrypted content to your screen", "c")
                 printy("Note : mode 2 works just like ZCypt used to function in releases before V2.3", 'c')
-                choice = inputy("Input :  ")
+                choice = input("Input : ")
                 try :
                     if 0 <= int(choice) <= 2 : 
                         outModeEncrypt = int(choice)
@@ -766,6 +774,21 @@ def settings() :
                     else : printy(choice + " is not an offered choice", "m")
                 except ValueError :
                     printy("Please enter an integer", "m")
+
+            elif settingsCmd[4] == '5' :
+                printy("ZCrypt offers you 2 different encryption algorithms for encrypting your messages", "c")
+                printy("3 values are available for this setting : ask, RSA and zcrypt", "c")
+                printy("If you choose ask, ZCrypt will always ask you if you want to use RSA or ZCrypt custom algorithm to encrypt your messages", "c")
+                printy("If you choose RSA, your messages will always be encrypted using RSA", "c")
+                printy("Lastly, as the name suggests, if you choose zcrypt, ZCrypt will always encrypt your messages using ZCrypt algorithm", "c")
+                printy("Note : ZCrypt algorithm is much less secure but offers many more features (such as addind a sender, reciever and date to your message. On the other hand RSA is much more secure (used by thousands of companies) but can only encrypt messages", "y")
+                choice = input("Input : ")
+                if choice.lower() == "ask" : encryptionMode = "ask"; printy("Successfully set encryption mode to " + choice, 'n')
+                elif choice.lower() == "rsa" : encryptionMode = "RSA"; printy("Successfully set encryption mode to " + choice, 'n')
+                elif choice.lower() == "zcrypt" : encryptionMode = "zcrypt"; printy("Successfully set encryption mode to " + choice, 'n')
+                else : 
+                    printy("The value you entered is not valid. Please note that ZCrypt has been saved as default value", "m")
+                    encryptionMode = "zcrypt"
             
             else :
                 printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
@@ -797,9 +820,10 @@ while True :
     if command == "encrypt" :
         #Here, the user inputs all informations required to encrypt
         print("Ok ! Let's encrypt your message !")
-        cryptMode = input("Do you want to crypt using ZCrypt algorithm or RSA (see Manual for details) ? (RSA/zcrypt) ")
-
-        prepareEncryptedOutput(cryptMode)
+        if encryptionMode == "ask" :
+            cryptMode = input("Do you want to crypt using ZCrypt algorithm or RSA (see Manual for details) ? (RSA/zcrypt) ")
+            prepareEncryptedOutput(cryptMode)
+        else : prepareEncryptedOutput(encryptionMode)
 
 
     elif command == "decrypt" :

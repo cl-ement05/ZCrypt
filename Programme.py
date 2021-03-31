@@ -336,6 +336,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
     else :
         mode = "RSA"
         printy("Info : entering RSA encryption mode...", "c")
+        printy("Warning : decrypting RSA messages is only supported on ZCrypt V3.0+, make sure the reciever meets this requirement", "y")
         RkeySetup()
         message_input = input("Type the message you want to encrypt : ")
 
@@ -602,16 +603,16 @@ def printDecrypted(finalDecrypted: str, senderDecr: str = None, recieverDecr: st
             printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
         else :
             printy("OK. Entering file mode...")
-            if senderDecr != None :    
-                saveToExtFile(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
-            else :
-                printy("Saving decrypted content to external file is not supported in RSA mode", 'm')
+            saveToExtFile({"Timestamp" : finalEntireDate + ' at ' + finalEntireTime, 
+            "Sender" : senderDecr,
+            "Reciever" : recieverDecr,
+            "Message" : finalDecrypted})
     
-    elif outModeEncrypt == 1 : 
-        if senderDecr != None :    
-            saveToExtFile(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
-        else :
-            printy("Saving decrypted content to external file is not supported in RSA mode", 'm')
+    elif outModeEncrypt == 1 :    
+        saveToExtFile({"Timestamp" : finalEntireDate + ' at ' + finalEntireTime, 
+            "Sender" : senderDecr,
+            "Reciever" : recieverDecr,
+            "Message" : finalDecrypted})
     else : printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
 
 
@@ -631,7 +632,7 @@ def printOutMode(senderDecr, recieverDecr, finalDecrypted, date, time) :
     print("")
 
 
-def saveToExtFile(senderDecr, recieverDecr, finalDecrypted, date, time) :
+def saveToExtFile(dico: dict) :
     print("")
     printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
     printy("If the name you enter is not a valid one, the default name,", 'c', end = ' ')
@@ -648,17 +649,9 @@ def saveToExtFile(senderDecr, recieverDecr, finalDecrypted, date, time) :
         filename = defaultName
     
     fileToWrite = open(filename, 'w')
-    fileToWrite.write("Timestamp : ")
-    fileToWrite.write(date + ' at ' + time)
-    fileToWrite.write("\n")
-    fileToWrite.write("Sender : ")
-    fileToWrite.write(senderDecr)
-    fileToWrite.write("\n")
-    fileToWrite.write("Reciever : ")
-    fileToWrite.write(recieverDecr)
-    fileToWrite.write("\n")
-    fileToWrite.write("Message : ")
-    fileToWrite.write(finalDecrypted)
+    for element in dico.keys() :
+        if dico[element] != None :                                        #used to avoid writing None elements i.e. in RSA mode where sender reciever and time = None
+            fileToWrite.write(element + " : " + dico[element] + "\n")
     fileToWrite.close()
 
     printy("All the decrypted data has been saved to", 'c', end = ' ')

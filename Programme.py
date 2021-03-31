@@ -105,28 +105,17 @@ def RfileCheck() :
         return False
 
     else :
-        lines = list()
         currentByte = file.read(1)
         currentLine = bytes()
 
         while currentByte != b"" :
-            print(currentByte)
-            try :
-                string = currentByte.decode("utf8")
-                if string == "\n" :
-                    lines.append(currentLine)
-                    currentLine = bytes()
-            except UnicodeDecodeError :
-                currentLine += currentByte
-            finally : 
-                currentByte = file.read(1)
+            currentLine += currentByte
+            currentByte = file.read(1)
         
-        print(lines)
-        assert(len(lines)) == 4
-        line1 = lines[0]
-        line2 = lines[1]
-        line3 = lines[2]
-        line5 = lines[3]
+        line1 = None
+        line2 = None
+        line3 = None
+        line5 = currentLine
         line4 = None      #since no key is stored on line 4 when using RSA crypt mode, not defining line4 could raise a NameError not defined so assigning None value
         return True
 
@@ -216,7 +205,8 @@ def encryptTime(mode) :
                 finalTimeList.append(str(encrypted_int))
         finalTimeEncr = "".join(finalTimeList)
     else :
-        return rsa.encrypt(current_time.encode("utf8"), pubKey)
+        return None
+        #rsa.encrypt(current_time.encode("utf8"), pubKey)'''
         
 
     assert(len(finalTimeEncr) == 28)
@@ -224,7 +214,7 @@ def encryptTime(mode) :
 
 
 #Encrypting sender
-def encryptSender(mode) :
+def encryptSender(mode, sender) :
     senderEncr = ''
     if mode =="z" :
         for character in range(len(sender)) :
@@ -232,10 +222,11 @@ def encryptSender(mode) :
             senderEncr += chr(mainEncrypt(senderAscii))
         return senderEncr
     else :
-        return rsa.encrypt(sender.encode("utf8"), pubKey)
+        return None
+        #return rsa.encrypt(sender.encode("utf8"), pubKey)
 
 #Encrypts receiver
-def encryptReciever(mode) :
+def encryptReciever(mode, reciever) :
     recieverEncr = ''
     if mode == "z" :
         for character in range(len(reciever)) :        
@@ -243,7 +234,8 @@ def encryptReciever(mode) :
             recieverEncr += chr(mainEncrypt(recieverAscii))
         return recieverEncr
     else :
-        return rsa.encrypt(reciever.encode("utf8"), pubKey)
+        return None
+        #return rsa.encrypt(reciever.encode("utf8"), pubKey)
 
 #Main encrypt engine
 def mainEncrypt(toEncrypt: int) -> int :             #takes a single int argument which must be the ascii representation of a char; returns the encrypted ascii
@@ -277,7 +269,7 @@ def mainEncrypt(toEncrypt: int) -> int :             #takes a single int argumen
 
 
 # Crypting the message
-def ZencryptMessage(mode) :
+def ZencryptMessage(mode, message_input) :
     finalMessageBinary = list()
 
     if mode == "z" :
@@ -327,16 +319,21 @@ def prepareEncryptedOutput(cryptingMode: str) :
         mode = "z"
         printy("Info : entering ZCrypt encryption mode...", "c")
         ZkeySetup()                          #creates a new key shared accross whole program
+        message_input = input("First, type the message you want to encrypt : ")
+        sender = input("Please type your name that will be used in the file as the sender information : ")
+        reciever = input("Finally, type the reciever of this message : ")
+        
+        finalTimeEncr = encryptTime("z" if mode == "z" else "rsa")
+        senderEncr = encryptSender("z" if mode == "z" else "rsa", sender)
+        recieverEncr = encryptReciever("z" if mode == "z" else "rsa", reciever)
 
     else :
         mode = "RSA"
         printy("Info : entering RSA encryption mode...", "c")
         RkeySetup()
+        message_input = input("Type the message you want to encrypt : ")
 
-    finalTimeEncr = encryptTime("z" if mode == "z" else "rsa")
-    senderEncr = encryptSender("z" if mode == "z" else "rsa")
-    recieverEncr = encryptReciever("z" if mode == "z" else "rsa")
-    finalMessageBinary = ZencryptMessage("z" if mode == "z" else "rsa")
+    finalMessageBinary = ZencryptMessage("z" if mode == "z" else "rsa", message_input)
 
 
     txt = False                      #boolean variable which is set to true when the file name specified by user is valid that's to say, ends with ".txt"
@@ -349,8 +346,8 @@ def prepareEncryptedOutput(cryptingMode: str) :
         try :
             testfileOW = open(fileOutput, "r")            #opening in read mode the name specified by the user so that if a file with the same already exists, no error will be raised
         except FileNotFoundError :                         #else if an error is thrown, file was not found so no file will be overwritten -> writeFile
-            writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, finalMessageBinary, mode)
-
+            if mode == "z" : writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin)
+            else : writeFile(mode, finalMessageBinary)
         else :
             if warnBeforeOW :                          #boolean setting 1 -> warn user that a file will be overwritten
                 printy("Warning !", 'y', end = ' ')
@@ -366,7 +363,8 @@ def prepareEncryptedOutput(cryptingMode: str) :
                     printy("will be overwritten !! Proceed anyway ? (y/n)", 'y', end ='')
                     confirmation = input(" ")
                     if confirmation == "y" :
-                        writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, finalMessageBinary, mode)    #after user confirmation that file can be overwritten -> writeFile
+                        if mode == "z" : writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin)
+                        else : writeFile(mode, finalMessageBinary)    #after user confirmation that file can be overwritten -> writeFile
                     else :
                         printy("OK. Encryption aborted", 'c') 
                 else :
@@ -374,7 +372,8 @@ def prepareEncryptedOutput(cryptingMode: str) :
             
             #if the warning has been disabled
             else :
-                writeFile(finalTimeEncr, senderEncr, recieverEncr, keyBin, finalMessageBinary, mode)
+                if mode == "z" : writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin)
+                else : writeFile(mode, finalMessageBinary)
                 printy("Note : a file has been overwritten", "y")
 
     else :
@@ -383,27 +382,17 @@ def prepareEncryptedOutput(cryptingMode: str) :
 
 
 #Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
-def writeFile(timeW: str or bytes, senderW: str or bytes, recipientW: str or bytes, keyW: str or rsa.PublicKey, messageW: list or bytes, mode: str) :
+def writeFile(mode: str, messageW: list or bytes, *args: str or bytes) :
     #'\n' is used to go to a new line at every new file settings
     file_w = open(fileOutput, "w" if mode == "z" else "wb")
     if mode == "z" :
-        file_w.write(timeW)
-        file_w.write("\n")
-        file_w.write(senderW)
-        file_w.write("\n")
-        file_w.write(recipientW)
-        file_w.write("\n")
-        file_w.write(keyW)
-        file_w.write("\n")
+        for elementToW in args :
+            file_w.write(elementToW + "\n")
         file_w.write("".join(messageW))
         file_w.close()
     else :
-        file_w.write(timeW)
-        file_w.write("\n".encode("utf8"))
-        file_w.write(senderW)
-        file_w.write("\n".encode("utf8"))
-        file_w.write(recipientW)
-        file_w.write("\n".encode("utf8"))
+        for elementToW in args :
+            file_w.write(elementToW + "\n")
         file_w.write(messageW)
         file_w.close()
 
@@ -793,10 +782,6 @@ while True :
     if command == "encrypt" :
         #Here, the user inputs all informations required to encrypt
         print("Ok ! Let's encrypt your message !")
-        message_input = input("First, type the message you want to encrypt : ")
-        sender = input("Please type your name that will be used in the file as the sender information : ")
-        reciever = input("Finally, type the reciever of this message : ")
-
         cryptMode = input("Do you want to crypt using ZCrypt algorithm or RSA (see Manual for details) ? (RSA/zcrypt) ")
 
         prepareEncryptedOutput(cryptMode)
@@ -819,7 +804,6 @@ while True :
             if RfileCheck() : 
                 printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
                 privKey = RkeySettings()
-                sender = rsa.decrypt(line2, privKey)
                 if privKey != None :
                     RmainDecrypt()
             else : print("Error")

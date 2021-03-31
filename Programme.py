@@ -603,16 +603,22 @@ def printDecrypted(finalDecrypted: str, senderDecr: str = None, recieverDecr: st
             printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
         else :
             printy("OK. Entering file mode...")
-            saveToExtFile({"Timestamp" : finalEntireDate + ' at ' + finalEntireTime, 
-            "Sender" : senderDecr,
-            "Reciever" : recieverDecr,
-            "Message" : finalDecrypted})
+            saveToExtFile(
+            {
+                "Timestamp" : (finalEntireDate + ' at ' + finalEntireTime if senderDecr != None else None),
+                "Sender" : senderDecr,
+                "Reciever" : recieverDecr,
+                "Message" : (finalDecrypted if senderDecr != None else finalDecrypted.decode("utf8"))
+            })     #changing finalDecrypted from bytes to str because dict must only contain strings
     
     elif outModeEncrypt == 1 :    
-        saveToExtFile({"Timestamp" : finalEntireDate + ' at ' + finalEntireTime, 
-            "Sender" : senderDecr,
-            "Reciever" : recieverDecr,
-            "Message" : finalDecrypted})
+        saveToExtFile(
+            {
+                "Timestamp" : (finalEntireDate + ' at ' + finalEntireTime if senderDecr != None else None), 
+                "Sender" : senderDecr,
+                "Reciever" : recieverDecr,
+                "Message" : (finalDecrypted if senderDecr == None else finalDecrypted.decode("utf8"))
+            })
     else : printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
 
 

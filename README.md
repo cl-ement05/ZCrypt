@@ -11,6 +11,8 @@ Feel free to commit improvements and enjoy !
 ## Requirements
 1. printy module which can be installed with ```pip3 install printy```
 2. rsa module which can be installed with `pip3 install rsa`
+3. 
 # Special thanks
 Edraobdu for his amazing [printy module](https://github.com/edraobdu/printy) 
+
 Sybren for the [Python-RSA library](https://github.com/sybrenstuvel/python-rsa)

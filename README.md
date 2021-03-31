@@ -1,4 +1,4 @@
-# ZCrypt
+# ZCrypt 
 ## Features
 * ZCrypt is a user-friendly interactive python program which can crypt a message along with the name of its sender and reciever
 * ZCrypt can of course decrypt what was encrypted

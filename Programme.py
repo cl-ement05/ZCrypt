@@ -870,106 +870,106 @@ def settings() :
             printy("Error : either this command is unknown either it does not use the needed format ! See the manual to learn more ", "m")
     
 
+if __name__ == '__main__' :
+    #Welcome screen
+    printy("#######################", "c>")
+    printy("# Welcome to ZCrypt ! #", "c>")
+    printy("#######################", "c>")
+    printy("Here are the commands you can use : encrypt, decrypt and you can also see the user manual by typing \"manual\"", "n>")
+    printy("If this is your first time using the program, please consider using the \"instructions\" command", "n>")
+    printy("If you want to access the settings, type \"settings\"", "n>")
+    printy("You can also exit the program by typing \"quit\"", "n>")                                                
+        
+    #main loop
+    while True :
+        print("")
+        printy("Please input a command ", "c")
+        command = input(">>> ")
 
-#Welcome screen
-printy("#######################", "c>")
-printy("# Welcome to ZCrypt ! #", "c>")
-printy("#######################", "c>")
-printy("Here are the commands you can use : encrypt, decrypt and you can also see the user manual by typing \"manual\"", "n>")
-printy("If this is your first time using the program, please consider using the \"instructions\" command", "n>")
-printy("If you want to access the settings, type \"settings\"", "n>")
-printy("You can also exit the program by typing \"quit\"", "n>")                                                
-    
-#main loop
-while True :
-    print("")
-    printy("Please input a command ", "c")
-    command = input(">>> ")
-
-    if "encrypt" in command :
-        #Here, the user inputs all informations required to encrypt
-        print("Ok ! Let's encrypt your message !")
-        if encryptionMode == "ask" :
-            cryptMode = input("Do you want to crypt using ZCrypt algorithm or RSA (see Manual for details) ? (RSA/zcrypt) ")
-            prepareEncryptedOutput(cryptMode)
-        else : prepareEncryptedOutput(encryptionMode)
+        if "encrypt" in command :
+            #Here, the user inputs all informations required to encrypt
+            print("Ok ! Let's encrypt your message !")
+            if encryptionMode == "ask" :
+                cryptMode = input("Do you want to crypt using ZCrypt algorithm or RSA (see Manual for details) ? (RSA/zcrypt) ")
+                prepareEncryptedOutput(cryptMode)
+            else : prepareEncryptedOutput(encryptionMode)
 
 
-    elif "decrypt" in command :
-        Error_Code = ""
-        decryptMode = input("Was your file encrypted with RSA or ZCrypt algorithm (ask the sender if you don't know) ? (RSA/zcrypt) ")
-        printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
-        file_name = input()
-        if decryptMode.lower() == "zcrypt" :
-            printy("Info : entering ZCrypt decryption mode...", "c")
-            if ZfileCheck() :
-                printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
-                ZkeySettings()
-                printDecrypted(ZdecryptMessage(), ZdecryptSender(), ZdecryptReciever(), ZdecryptTime())
+        elif "decrypt" in command :
+            Error_Code = ""
+            decryptMode = input("Was your file encrypted with RSA or ZCrypt algorithm (ask the sender if you don't know) ? (RSA/zcrypt) ")
+            printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
+            file_name = input()
+            if decryptMode.lower() == "zcrypt" :
+                printy("Info : entering ZCrypt decryption mode...", "c")
+                if ZfileCheck() :
+                    printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
+                    ZkeySettings()
+                    printDecrypted(ZdecryptMessage(), ZdecryptSender(), ZdecryptReciever(), ZdecryptTime())
+                else :
+                    printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
+                    print("Aborting...")
             else :
-                printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
-                print("Aborting...")
-        else :
-            printy("Info : entering RSA decryption mode...", "c")
-            if RfileCheck() : 
-                printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
-                privKey = RkeySettings()
-                if privKey != None :
-                    RmainDecrypt()
-                else : print("Aborting...")
-            else : printy("Error : file not found or corrupted", "m")
+                printy("Info : entering RSA decryption mode...", "c")
+                if RfileCheck() : 
+                    printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
+                    privKey = RkeySettings()
+                    if privKey != None :
+                        RmainDecrypt()
+                    else : print("Aborting...")
+                else : printy("Error : file not found or corrupted", "m")
 
-    elif "settings" in command :
-        settings()
+        elif "settings" in command :
+            settings()
 
-    elif "showErrors" in command : 
-        if Error_Code != "" :
-            print("We are sorry to hear that your file has a problem")
-            print("Here is your error code :", Error_Code)
-            print("This is an excract from the UserManual where your error code is discussed")
+        elif "showErrors" in command : 
+            if Error_Code != "" :
+                print("We are sorry to hear that your file has a problem")
+                print("Here is your error code :", Error_Code)
+                print("This is an excract from the UserManual where your error code is discussed")
 
-            #Showing info about the error code starting with ...
+                #Showing info about the error code starting with ...
+                manual_file = open("UserManual.txt", "r")
+                
+                #Explaining the error itself
+                all_lines = manual_file.readlines()
+                for line in range(len(all_lines)) :
+                    if Error_Code in all_lines[line] : print(all_lines[line])
+                
+            else :
+                printy("Your file has been decrypted without any errors.", "c")
+
+        elif "manual" in command :
             manual_file = open("UserManual.txt", "r")
-            
-            #Explaining the error itself
-            all_lines = manual_file.readlines()
-            for line in range(len(all_lines)) :
-                if Error_Code in all_lines[line] : print(all_lines[line])
-            
+            manual_text = manual_file.readlines()
+            for line in range(len(manual_text)) :
+                print(manual_text[line])
+
+        elif "instructions" in command :
+            print("Dear User, welcome to ZCrypt !")
+            print("ZCrypt was developped by Clement")
+            print("This software was created in order to encrypt messages easily, send them and decrypt them quickly !")
+            print("")
+                
+            print("If you want to encrypt a file, remeber that it will be saved in the same location of this program")
+            print("It will be created with the name \"Mail.txt\"")
+            print("You can always changes this name in the settings")
+            print("")
+
+            print("If you want to decrypt a file, you will need to specify its name as you launch the decrypting process")
+            print("")
+
+            print("If the program says that your file has a problem and that it can't be decrypted, don't panic !")
+            print("You can use the \"showErrors\" command !")
+            print("")
+
+            print("Enjoy !")
+
+        elif command == 'exit' :
+            printy("Thank you for using ZCrypt ! See you soon...", "c")
+            exit()
+        
         else :
-            printy("Your file has been decrypted without any errors.", "c")
-
-    elif "manual" in command :
-        manual_file = open("UserManual.txt", "r")
-        manual_text = manual_file.readlines()
-        for line in range(len(manual_text)) :
-            print(manual_text[line])
-
-    elif "instructions" in command :
-        print("Dear User, welcome to ZCrypt !")
-        print("ZCrypt was developped by Clement")
-        print("This software was created in order to encrypt messages easily, send them and decrypt them quickly !")
-        print("")
-            
-        print("If you want to encrypt a file, remeber that it will be saved in the same location of this program")
-        print("It will be created with the name \"Mail.txt\"")
-        print("You can always changes this name in the settings")
-        print("")
-
-        print("If you want to decrypt a file, you will need to specify its name as you launch the decrypting process")
-        print("")
-
-        print("If the program says that your file has a problem and that it can't be decrypted, don't panic !")
-        print("You can use the \"showErrors\" command !")
-        print("")
-
-        print("Enjoy !")
-
-    elif command == 'exit' :
-        printy("Thank you for using ZCrypt ! See you soon...", "c")
-        exit()
-    
-    else :
-        printy("Sorry this command is unknown. Please try again", "m")
-        if 'encr' in command : printy("Did you mean \"encrypt\" command ?", "y")
-        elif 'decr' in command : printy("Did you mean \"decrypt\" command ?", "y")
+            printy("Sorry this command is unknown. Please try again", "m")
+            if 'encr' in command : printy("Did you mean \"encrypt\" command ?", "y")
+            elif 'decr' in command : printy("Did you mean \"decrypt\" command ?", "y")

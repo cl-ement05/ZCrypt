@@ -886,7 +886,7 @@ while True :
     printy("Please input a command ", "c")
     command = input(">>> ")
 
-    if command == "encrypt" :
+    if "encrypt" in command :
         #Here, the user inputs all informations required to encrypt
         print("Ok ! Let's encrypt your message !")
         if encryptionMode == "ask" :
@@ -895,7 +895,7 @@ while True :
         else : prepareEncryptedOutput(encryptionMode)
 
 
-    elif command == "decrypt" :
+    elif "decrypt" in command :
         Error_Code = ""
         decryptMode = input("Was your file encrypted with RSA or ZCrypt algorithm (ask the sender if you don't know) ? (RSA/zcrypt) ")
         printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
@@ -919,10 +919,10 @@ while True :
                 else : print("Aborting...")
             else : printy("Error : file not found or corrupted", "m")
 
-    elif command == "settings" :
+    elif "settings" in command :
         settings()
 
-    elif command == "showErrors" : 
+    elif "showErrors" in command : 
         if Error_Code != "" :
             print("We are sorry to hear that your file has a problem")
             print("Here is your error code :", Error_Code)
@@ -939,13 +939,13 @@ while True :
         else :
             printy("Your file has been decrypted without any errors.", "c")
 
-    elif command == "manual" :
+    elif "manual" in command :
         manual_file = open("UserManual.txt", "r")
         manual_text = manual_file.readlines()
         for line in range(len(manual_text)) :
             print(manual_text[line])
 
-    elif command == "instructions" :
+    elif "instructions" in command :
         print("Dear User, welcome to ZCrypt !")
         print("ZCrypt was developped by Clement")
         print("This software was created in order to encrypt messages easily, send them and decrypt them quickly !")

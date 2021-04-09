@@ -3,6 +3,7 @@ from calendar import day_name
 from random import randint
 from printy import printy, inputy
 import rsa
+import base64 as b64
 
 file = ''
 Error_Code = str()
@@ -107,16 +108,22 @@ def RfileCheck() :
 
     else :
         currentByte = file.read(1)
+        lines = list()
         currentLine = bytes()
 
         while currentByte != b"" :
-            currentLine += currentByte
+            string = currentByte.decode("utf8") 
+            if string == "|" :
+                lines.append(currentLine)
+                currentLine = bytes()
+            else : 
+                currentLine += currentByte
             currentByte = file.read(1)
         
-        line1 = None
-        line2 = None
-        line3 = None
-        line5 = currentLine
+        line1 = b64.b64decode(lines[0])
+        line2 = b64.b64decode(lines[1])
+        line3 = b64.b64decode(lines[2])
+        line5 = b64.b64decode(lines[3])
         line4 = None      #since no key is stored on line 4 when using RSA crypt mode, not defining line4 could raise a NameError not defined so assigning None value
         return True
 
@@ -258,8 +265,9 @@ def encryptTime(mode) :
                 finalTimeList.append(str(encrypted_int))
         finalTimeEncr = "".join(finalTimeList)
     else :
-        return None
-        #rsa.encrypt(current_time.encode("utf8"), pubKey)'''
+        return b64.b64encode(rsa.encrypt(
+            current_time.encode(), 
+            pubKey))
         
 
     assert(len(finalTimeEncr) == 28)
@@ -275,8 +283,9 @@ def encryptSender(mode, sender) :
             senderEncr += chr(mainEncrypt(senderAscii))
         return senderEncr
     else :
-        return None
-        #return rsa.encrypt(sender.encode("utf8"), pubKey)
+        return b64.b64encode(rsa.encrypt(
+            sender.encode(), 
+            pubKey))
 
 #Encrypts receiver
 def encryptReciever(mode, reciever) :
@@ -287,8 +296,9 @@ def encryptReciever(mode, reciever) :
             recieverEncr += chr(mainEncrypt(recieverAscii))
         return recieverEncr
     else :
-        return None
-        #return rsa.encrypt(reciever.encode("utf8"), pubKey)
+        return b64.b64encode(rsa.encrypt(
+            reciever.encode(), 
+            pubKey))
 
 #Main encrypt engine
 def mainEncrypt(toEncrypt: int) -> int :             #takes a single int argument which must be the ascii representation of a char; returns the encrypted ascii
@@ -360,7 +370,9 @@ def ZencryptMessage(mode, message_input) :
         printy("Info : Your key is : " + str(keyNum), 'c')
         return finalMessageBinary
     else :
-        return rsa.encrypt(message_input.encode("utf8"), pubKey)
+        return b64.b64encode(rsa.encrypt(
+            message_input.encode(), 
+            pubKey))
 
 
 
@@ -371,22 +383,21 @@ def prepareEncryptedOutput(cryptingMode: str) :
         mode = "z"
         printy("Info : entering ZCrypt encryption mode...", "c")
         ZkeySetup()                          #creates a new key shared accross whole program
-        message_input = input("First, type the message you want to encrypt : ")
-        sender = input("Please type your name that will be used in the file as the sender information : ")
-        reciever = input("Finally, type the reciever of this message : ")
-        
-        finalTimeEncr = encryptTime("z" if mode == "z" else "rsa")
-        senderEncr = encryptSender("z" if mode == "z" else "rsa", sender)
-        recieverEncr = encryptReciever("z" if mode == "z" else "rsa", reciever)
 
     else :
         mode = "RSA"
         printy("Info : entering RSA encryption mode...", "c")
         printy("Warning : decrypting RSA messages is only supported on ZCrypt V3.0+, make sure the reciever meets this requirement", "y")
         RkeySetup()
-        message_input = input("Type the message you want to encrypt : ")
+
+    message_input = input("First, type the message you want to encrypt : ")
+    sender = input("Please type your name that will be used in the file as the sender information : ")
+    reciever = input("Finally, type the reciever of this message : ")
 
     finalMessageBinary = ZencryptMessage("z" if mode == "z" else "rsa", message_input)
+    finalTimeEncr = encryptTime("z" if mode == "z" else "rsa")
+    senderEncr = encryptSender("z" if mode == "z" else "rsa", sender)
+    recieverEncr = encryptReciever("z" if mode == "z" else "rsa", reciever)
 
 
     txt = False                      #boolean variable which is set to true when the file name specified by user is valid that's to say, ends with ".txt"
@@ -399,8 +410,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
         try :
             open(fileOutput, "r")            #opening in read mode the name specified by the user so that if a file with the same already exists, no error will be raised
         except FileNotFoundError :                         #else if an error is thrown, file was not found so no file will be overwritten -> writeFile
-            if mode == "z" : writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin)
-            else : writeFile(mode, finalMessageBinary)
+            writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)
         else :
             if warnBeforeOW :                          #boolean setting 1 -> warn user that a file will be overwritten
                 printy("Warning : " + fileOutput + " already exists", 'y')
@@ -414,8 +424,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
                     printy("will be overwritten !! Proceed anyway ? (y/n)", 'y', end ='')
                     confirmation = input(" ")
                     if confirmation == "y" :
-                        if mode == "z" : writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin)
-                        else : writeFile(mode, finalMessageBinary)    #after user confirmation that file can be overwritten -> writeFile
+                        writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)   #after user confirmation that file can be overwritten -> writeFile
                     else :
                         printy("Info : encryption aborted", 'c') 
                 else :
@@ -423,8 +432,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
             
             #if the warning has been disabled
             else :
-                if mode == "z" : writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin)
-                else : writeFile(mode, finalMessageBinary)
+                writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)
                 printy("Note : a file has been overwritten", "y")
 
     else :
@@ -438,13 +446,13 @@ def writeFile(mode: str, messageW: list or bytes, *args: str or bytes) :
     file_w = open(fileOutput, "w" if mode == "z" else "wb")
     if mode == "z" :
         for elementToW in args :
-            file_w.write(elementToW + "\n")
+            if elementToW is not None : file_w.write(elementToW + "\n")
         file_w.write("".join(messageW))
         file_w.close()
     else :
         for elementToW in args :
-            file_w.write(elementToW + "\n")
-        file_w.write(messageW)
+            if elementToW is not None : file_w.write(elementToW + '|'.encode("utf8"))
+        file_w.write(messageW + '|'.encode('utf8'))
         file_w.close()
 
     printy("Success : your message has been securely encrypted !", 'n')
@@ -581,12 +589,17 @@ def ZdecryptMessage() :
 def RmainDecrypt() :
     try :
         mess = rsa.decrypt(line5, privKey)
+        date = rsa.decrypt(line1, privKey).decode()
+        sender = rsa.decrypt(line2, privKey)
+        reciever = rsa.decrypt(line3, privKey)
+        dateFormatted = (date[:2], date[3:5], date[6:10], date[11:13], date[14:16], date[17:])         #formatting to match ZdecryptTime() return format
     except rsa.DecryptionError :
         printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
-    printDecrypted(mess)
+    else :
+        printDecrypted(mess.decode(), sender.decode(), reciever.decode(), dateFormatted)
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
-def printDecrypted(finalDecrypted: str, senderDecr: str = None, recieverDecr: str = None, dateDecr: tuple = None) :
+def printDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, dateDecr: tuple) :
     #list of the months to know which month number corresponds to what month -> used for date format plain text
     references = {
 
@@ -649,21 +662,21 @@ def printDecrypted(finalDecrypted: str, senderDecr: str = None, recieverDecr: st
             printy("Info : entering file mode...")
             saveToExtFile(
             {
-                "Timestamp" : (finalEntireDate + ' at ' + finalEntireTime if senderDecr != None else None),
+                "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
                 "Sender" : senderDecr,
                 "Reciever" : recieverDecr,
-                "Message" : (finalDecrypted if senderDecr != None else finalDecrypted.decode("utf8"))
+                "Message" : finalDecrypted
             })     #changing finalDecrypted from bytes to str because dict must only contain strings
     
     elif outModeEncrypt == 1 :    
         saveToExtFile(
             {
-                "Timestamp" : (finalEntireDate + ' at ' + finalEntireTime if senderDecr != None else None), 
+                "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
                 "Sender" : senderDecr,
                 "Reciever" : recieverDecr,
-                "Message" : (finalDecrypted if senderDecr != None else finalDecrypted.decode("utf8"))
+                "Message" : finalDecrypted
             })
-    else : printOutMode(senderDecr, recieverDecr, (finalDecrypted if senderDecr != None else finalDecrypted.decode("utf8")), finalEntireDate, finalEntireTime)
+    else : printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
 
 
 def printOutMode(senderDecr, recieverDecr, finalDecrypted, date, time) :
@@ -703,11 +716,10 @@ def saveToExtFile(dico: dict) :
     printy("Success : decrypted data has been saved to " + fileName, 'n')
 
 
-def checkFileName(filename, defaultName) :
+def checkFileName(filename: str, defaultName: str) :
     #because e.g. filname is "abc" then abc[-4:] returns "abc" and ".txt" is 4 char long so in order to have a valid name both len() > 4 and ends with ".txt" is required
     if not (len(filename) > 4 and filename[-4:] == ".txt") :
-        printy("Error : the name you entered is not valid", 'm')
-        printy("Warning : " + defaultName + " will be used instead", "y")
+        printy("Warning : the name you entered is not valid. " + defaultName + " will be used instead", "y")
         return defaultName
     else : return filename
 

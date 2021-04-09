@@ -522,7 +522,7 @@ def ZdecryptReciever() :
         reciever_chr = ord(recieverEncr[character])
         recieverDecr += chr(ZmainDecrypt(reciever_chr))
 
-    recieverDecr = recieverDecr[:(len(recieverDecr) - 1)]                                                  #This line removes the 0 that spaws after the name
+    recieverDecr = recieverDecr[:(len(recieverDecr) - 1)]                                                  #This line removes the 0 that spawns after the name
     return recieverDecr    
 
 #main decrypt engine
@@ -531,7 +531,7 @@ def ZmainDecrypt(toencrypt: int) -> int :
         if toencrypt + decryptKey <= 126 :
             decryptedAscii = toencrypt + decryptKey
             
-        elif toencrypt + decryptKey > 126 :                     # Will be enabled if the decrypted ascii number is out of range of the ascii table
+        elif toencrypt + decryptKey > 126 :                     # Will be triggered if the decrypted ascii number is out of range of the ascii table
             cut = 0
             while toencrypt <= 126 :
                 toencrypt += 1
@@ -551,7 +551,7 @@ def ZmainDecrypt(toencrypt: int) -> int :
             remainingKey = decryptKey - cut
             decryptedAscii = 126 - remainingKey
     
-    if decryptedAscii == 126 : return 32    #Since spaces are encrypted as a "~", if the programm finds an ascii of 126 (which is the code of ~), it transoforms the ~ character into a space
+    if decryptedAscii == 126 : return 32    #Since spaces are encrypted as a "~", if the programm finds a 126 number (which is the ascii code of ~), it changes the ~ character into a space
     else : return decryptedAscii
 
 #decrypting message

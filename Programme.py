@@ -130,7 +130,7 @@ def RfileCheck() :
 
 #Here all functions are defined
 #Gets the key which is encrypted in binary
-def ZkeySettings() :
+def ZretrieveKey() :
     key = line4
     global keyMethod
     global decryptKey
@@ -140,7 +140,7 @@ def ZkeySettings() :
     else :
         keyMethod = 'minus'
 
-def RkeySettings() :
+def RretrieveKey() :
     printy("In order to decrypt a message that was encrypted with RSA, a private key is needed", "c")
     printy("If you saved it when encrypting your message, the private key specs will be automatically retrieved", "c")
     printy("Otherwise you will need to remember and enter each value", "c")
@@ -180,7 +180,7 @@ def RkeySettings() :
     return privKey
 
 #Encrypts the key
-def ZkeySetup() :
+def ZcreateKey() :
     global keyNum
     global keyBin
     global lastKey
@@ -207,7 +207,7 @@ def ZkeySetup() :
     lastKey = keyNum
     keyBin = format(keyNum, '08b')
 
-def RkeySetup() :
+def RcreateKey() :
     global privKey, pubKey, keyBin
     printy("Info : generating RSA keys", 'c')
     (pubKey, privKey) = rsa.newkeys(rsaKeyBytes)
@@ -223,7 +223,7 @@ def RkeySetup() :
     printy("Do you want to save your private key to a text file ? (Y/n) ", "c", end = ' ')
     answer = input("")
     if answer != "n" :
-        fileName = checkFileName("keys.txt")
+        fileName = askCheckFilename("keys.txt")
         printy("Info : saving private key...", "c")
         file = open(fileName, "w")
         file.write(str(privKey.n) + "\n")
@@ -275,7 +275,7 @@ def encryptSender(mode, sender) :
     if mode =="z" :
         for character in range(len(sender)) :
             senderAscii = ord(sender[character])
-            senderEncr += chr(mainEncrypt(senderAscii))
+            senderEncr += chr(ZmainEncrypt(senderAscii))
         return senderEncr
     else :
         return b64.b64encode(rsa.encrypt(
@@ -288,7 +288,7 @@ def encryptReciever(mode, reciever) :
     if mode == "z" :
         for character in range(len(reciever)) :        
             recieverAscii = ord(reciever[character])
-            recieverEncr += chr(mainEncrypt(recieverAscii))
+            recieverEncr += chr(ZmainEncrypt(recieverAscii))
         return recieverEncr
     else :
         return b64.b64encode(rsa.encrypt(
@@ -296,7 +296,7 @@ def encryptReciever(mode, reciever) :
             pubKey))
 
 #Main encrypt engine
-def mainEncrypt(toEncrypt: int) -> int :             #takes a single int argument which must be the ascii representation of a char; returns the encrypted ascii
+def ZmainEncrypt(toEncrypt: int) -> int :             #takes a single int argument which must be the ascii representation of a char; returns the encrypted ascii
     #If the key is a pair number
     if keyNum % 2 == 0 :
         if toEncrypt - keyNum >= 33 :
@@ -341,7 +341,7 @@ def ZencryptMessage(mode, message_input) :
                 printy("Error : your message contains a character that is not supported", "m")
                 break
 
-            asciiEncr = mainEncrypt(asciiChr)
+            asciiEncr = ZmainEncrypt(asciiChr)
             letterBinary = list()
             #If the Ascii number contains only two numbers, the programm adds a 0 in front oh the two to get a number with 3 binaires at the end
             if len(str(asciiEncr)) == 2 :
@@ -377,13 +377,13 @@ def prepareEncryptedOutput(cryptingMode: str) :
     if cryptingMode.lower() == "zcrypt" :
         mode = "z"
         printy("Info : entering ZCrypt encryption mode...", "c")
-        ZkeySetup()                          #creates a new key shared accross whole program
+        ZcreateKey()                          #creates a new key shared accross whole program
 
     else :
         mode = "RSA"
         printy("Info : entering RSA encryption mode...", "c")
         printy("Warning : decrypting RSA messages is only supported on ZCrypt V3.0+, make sure the reciever meets this requirement", "y")
-        RkeySetup()
+        RcreateKey()
         print("")
 
     message_input = input("First, type the message you want to encrypt : ")
@@ -509,7 +509,7 @@ def ZdecryptSender() :
     senderDecr = ''
     for character in range(len(senderEncr)) :
         sender_chr = ord(senderEncr[character])
-        senderDecr += chr(mainDecrypt(sender_chr))
+        senderDecr += chr(ZmainDecrypt(sender_chr))
 
     senderDecr = senderDecr[:(len(senderDecr) - 1)]                                                  #This line removes the 0 that spaws after the name
     return senderDecr
@@ -520,13 +520,13 @@ def ZdecryptReciever() :
     recieverDecr = ''
     for character in range(len(recieverEncr)) :
         reciever_chr = ord(recieverEncr[character])
-        recieverDecr += chr(mainDecrypt(reciever_chr))
+        recieverDecr += chr(ZmainDecrypt(reciever_chr))
 
     recieverDecr = recieverDecr[:(len(recieverDecr) - 1)]                                                  #This line removes the 0 that spaws after the name
     return recieverDecr    
 
 #main decrypt engine
-def mainDecrypt(toencrypt: int) -> int :
+def ZmainDecrypt(toencrypt: int) -> int :
     if keyMethod == 'plus' :
         if toencrypt + decryptKey <= 126 :
             decryptedAscii = toencrypt + decryptKey
@@ -577,7 +577,7 @@ def ZdecryptMessage() :
         charAsciiEncr = int(str(encrypted_ascii1) + str(encrypted_ascii2) + str(encrypted_ascii3))            # Joins the three ascii numbers got from the binaries
         #print("Encrypted ascii:", charAsciiEncr)
         #The encrypt/decrypt method is different for pair/impair numbers
-        decryptedAscii = mainDecrypt(charAsciiEncr)
+        decryptedAscii = ZmainDecrypt(charAsciiEncr)
 
         finalDecrypted += chr(decryptedAscii)
     return finalDecrypted
@@ -592,10 +592,10 @@ def RmainDecrypt() :
     except rsa.DecryptionError :
         printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
     else :
-        printDecrypted(mess.decode(), sender.decode(), reciever.decode(), dateFormatted)
+        processDecrypted(mess.decode(), sender.decode(), reciever.decode(), dateFormatted)
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
-def printDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, dateDecr: tuple) :
+def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, dateDecr: tuple) :
     #list of the months to know which month number corresponds to what month -> used for date format plain text
     references = {
 
@@ -653,10 +653,10 @@ def printDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, date
         choiceMode = inputy("Would you like to output the encrypted content to be saved to a file or simply to be displayed on screen ? (FILE/print) ", "c")
         if choiceMode == "print" :
             printy("Info : entering print mode...")
-            printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
+            printDecrypted(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
         else :
             printy("Info : entering file mode...")
-            saveToExtFile(
+            saveDecryptedToFile(
             {
                 "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
                 "Sender" : senderDecr,
@@ -665,34 +665,33 @@ def printDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, date
             })     #changing finalDecrypted from bytes to str because dict must only contain strings
     
     elif outModeEncrypt == 1 :    
-        saveToExtFile(
+        saveDecryptedToFile(
             {
                 "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
                 "Sender" : senderDecr,
                 "Reciever" : recieverDecr,
                 "Message" : finalDecrypted
             })
-    else : printOutMode(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
+    else : printDecrypted(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
 
 
-def printOutMode(senderDecr, recieverDecr, finalDecrypted, date, time) :
-    if senderDecr != None and recieverDecr != None and date != '' and time != '' :
-        printy("This message was created " + date + ' at ' + time, "c>")
-        print("")
+def printDecrypted(senderDecr, recieverDecr, finalDecrypted, date, time) :
+    printy("This message was created " + date + ' at ' + time, "c>")
+    print("")
 
-        printy(senderDecr + " sent it !", "c>")
-        print("")
+    printy(senderDecr + " sent it !", "c>")
+    print("")
 
-        printy(recieverDecr + " should recieve it !", "c>")
-        print("")
+    printy(recieverDecr + " should recieve it !", "c>")
+    print("")
 
     printy("The message is : " + finalDecrypted, "c>")
 
     print("")
 
 
-def saveToExtFile(dico: dict) :  
-    fileName = checkFileName("Decrypted.txt")
+def saveDecryptedToFile(dico: dict) :  
+    fileName = askCheckFilename("Decrypted.txt")
     
     fileToWrite = open(fileName, 'w')
     for element in dico.keys() :
@@ -703,7 +702,7 @@ def saveToExtFile(dico: dict) :
     printy("Success : decrypted data has been saved to " + fileName, 'n')
 
 
-def checkFileName(defaultName: str) :
+def askCheckFilename(defaultName: str) :
     printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
     printy("If the name you enter is not a valid one, " + defaultName, 'c', end = ' ')
     printy("will be used", 'c')
@@ -908,17 +907,17 @@ if __name__ == '__main__' :
             if decryptMode.lower() == "zcrypt" :
                 printy("Info : entering ZCrypt decryption mode...", "c")
                 if ZfileCheck() :
-                    printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
-                    ZkeySettings()
-                    printDecrypted(ZdecryptMessage(), ZdecryptSender(), ZdecryptReciever(), ZdecryptTime())
+                    printy("Your file was successfully checked and no file integrity errors were found. Continuing...", "n")
+                    ZretrieveKey()
+                    processDecrypted(ZdecryptMessage(), ZdecryptSender(), ZdecryptReciever(), ZdecryptTime())
                 else :
                     printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
                     print("Aborting...")
             else :
                 printy("Info : entering RSA decryption mode...", "c")
                 if RfileCheck() : 
-                    printy("Your file was successfully checked and no file integrity violations were found. Continuing...", "n")
-                    privKey = RkeySettings()
+                    printy("Your file was successfully checked and no file integrity errors were found. Continuing...", "n")
+                    privKey = RretrieveKey()
                     if privKey != None :
                         RmainDecrypt()
                     else : print("Aborting...")

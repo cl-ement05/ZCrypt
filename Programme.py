@@ -223,12 +223,7 @@ def RkeySetup() :
     printy("Do you want to save your private key to a text file ? (Y/n) ", "c", end = ' ')
     answer = input("")
     if answer != "n" :
-        printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
-        printy("If the name you enter is not a valid one, keys.txt", 'c', end = ' ')
-        printy("will be used", 'c')
-        fileNameInput = inputy("Enter file name : ")
-        print("")
-        fileName = checkFileName(fileNameInput, "keys.txt")
+        fileName = checkFileName("keys.txt")
         printy("Info : saving private key...", "c")
         file = open(fileName, "w")
         file.write(str(privKey.n) + "\n")
@@ -389,6 +384,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
         printy("Info : entering RSA encryption mode...", "c")
         printy("Warning : decrypting RSA messages is only supported on ZCrypt V3.0+, make sure the reciever meets this requirement", "y")
         RkeySetup()
+        print("")
 
     message_input = input("First, type the message you want to encrypt : ")
     sender = input("Please type your name that will be used in the file as the sender information : ")
@@ -695,17 +691,8 @@ def printOutMode(senderDecr, recieverDecr, finalDecrypted, date, time) :
     print("")
 
 
-def saveToExtFile(dico: dict) :
-    print("")
-    defaultName = "Decrypted.txt"
-    printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
-    printy("If the name you enter is not a valid one, the default name,", 'c', end = ' ')
-    printy(defaultName, 'c', end = ' ')
-    printy("will be used", 'c')
-    fileNameInput = inputy("Enter file name : ")
-    print("")
-    
-    fileName = checkFileName(fileNameInput, defaultName)
+def saveToExtFile(dico: dict) :  
+    fileName = checkFileName("Decrypted.txt")
     
     fileToWrite = open(fileName, 'w')
     for element in dico.keys() :
@@ -716,12 +703,18 @@ def saveToExtFile(dico: dict) :
     printy("Success : decrypted data has been saved to " + fileName, 'n')
 
 
-def checkFileName(filename: str, defaultName: str) :
+def checkFileName(defaultName: str) :
+    printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
+    printy("If the name you enter is not a valid one, " + defaultName, 'c', end = ' ')
+    printy("will be used", 'c')
+    fileNameInput = inputy("Enter file name : ")
+    print("")
+
     #because e.g. filname is "abc" then abc[-4:] returns "abc" and ".txt" is 4 char long so in order to have a valid name both len() > 4 and ends with ".txt" is required
-    if not (len(filename) > 4 and filename[-4:] == ".txt") :
+    if not (len(fileNameInput) > 4 and fileNameInput[-4:] == ".txt") :
         printy("Warning : the name you entered is not valid. " + defaultName + " will be used instead", "y")
         return defaultName
-    else : return filename
+    else : return fileNameInput
 
 def findDayDate(date) :
     dayNumber = datetime.strptime(date, '%d %m %Y').weekday()

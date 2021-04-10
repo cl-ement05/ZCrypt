@@ -333,7 +333,7 @@ def ZmainEncrypt(toEncrypt: int) -> int :             #takes a single int argume
 
 
 # Crypting the message
-def ZencryptMessage(mode, message_input) :
+def encryptMessage(mode, message_input) :
     finalMessageBinary = list()
 
     if mode == "z" :
@@ -396,7 +396,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
     sender = input("Please type your name that will be used in the file as the sender information : ")
     reciever = input("Finally, type the reciever of this message : ")
 
-    finalMessageBinary = ZencryptMessage("z" if mode == "z" else "rsa", message_input)
+    finalMessageBinary = encryptMessage("z" if mode == "z" else "rsa", message_input)
     finalTimeEncr = encryptTime("z" if mode == "z" else "rsa")
     senderEncr = encryptSender("z" if mode == "z" else "rsa", sender)
     recieverEncr = encryptReciever("z" if mode == "z" else "rsa", reciever)
@@ -435,7 +435,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
             #if the warning has been disabled
             else :
                 writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)
-                printy("Note : a file has been overwritten", "y")
+                printy("Warning : a file has been overwritten", "y")
 
     else :
         printy("Error : the name of the file you want to save is incorect. Please try another one !", 'm')
@@ -653,62 +653,62 @@ def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, da
     print("")
 
     finalEntireDate, finalEntireTime = '', ''
-        #changing the final str according to what user specified for date format
-    if dateDecr != None :
-        if dateFormat == '1' :
-            finalEntireDate = dateDecr[0] + '/' + dateDecr[1] + '/' + dateDecr[2]
-        elif dateFormat == '2' :
-            finalEntireDate = dateDecr[0] + '/' + dateDecr[1] + '/' + dateDecr[2][2:4]
-        elif dateFormat == '3' :
-            finalEntireDate = dateDecr[2] + '/' + dateDecr[1] + '/' + dateDecr[0]
-        elif dateFormat == '4' :
-            month_text = references['months'][dateDecr[1]]
-            
-            #Used to find the day of the week with the date number
-            dayWeek = findDayDate(dateDecr[0] + ' ' + dateDecr[1] + ' ' + dateDecr[2])
+    
+    #changing the final str according to what user specified in dateFormat parameter
+    if dateFormat == '1' :
+        finalEntireDate = dateDecr[0] + '/' + dateDecr[1] + '/' + dateDecr[2]
+    elif dateFormat == '2' :
+        finalEntireDate = dateDecr[0] + '/' + dateDecr[1] + '/' + dateDecr[2][2:4]
+    elif dateFormat == '3' :
+        finalEntireDate = dateDecr[2] + '/' + dateDecr[1] + '/' + dateDecr[0]
+    elif dateFormat == '4' :
+        month_text = references['months'][dateDecr[1]]
+        
+        #Used to find the day of the week with the date number
+        dayWeek = findDayName(dateDecr[0] + ' ' + dateDecr[1] + ' ' + dateDecr[2])
 
-            #This part analysis what is the day and adds the 'th', 'st'... at the end
-            completeDay = ''
-            if dateDecr[0] == 1 :
-                completeDay = dateDecr[0] + 'st'
-            elif dateDecr[0] == 2 :
-                completeDay = dateDecr[0] + 'nd'
-            elif dateDecr[0] == 3 :
-                completeDay = dateDecr[0] + 'rd'
-            else :
-                completeDay = dateDecr[0] + 'th'
-            
-            finalEntireDate = dayWeek + ", " + month_text + " the " + completeDay + " " + dateDecr[2]
-            
-        finalEntireTime = dateDecr[3] + ':' + dateDecr[4] + ':' + dateDecr[5]
+        #This part analysis what is the day and adds the 'th', 'st'... at the end
+        completeDay = ''
+        if dateDecr[0] == 1 :
+            completeDay = dateDecr[0] + 'st'
+        elif dateDecr[0] == 2 :
+            completeDay = dateDecr[0] + 'nd'
+        elif dateDecr[0] == 3 :
+            completeDay = dateDecr[0] + 'rd'
+        else :
+            completeDay = dateDecr[0] + 'th'
+        
+        finalEntireDate = dayWeek + ", " + month_text + " the " + completeDay + " " + dateDecr[2]
+        
+    finalEntireTime = dateDecr[3] + ':' + dateDecr[4] + ':' + dateDecr[5]
     
     if outModeEncrypt == 0 :
         choiceMode = inputy("Would you like to output the encrypted content to be saved to a file or simply to be displayed on screen ? (FILE/print) ", "c")
         if choiceMode == "print" :
             printy("Info : entering print mode...")
-            printDecrypted(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
+            printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
         else :
             printy("Info : entering file mode...")
-            saveDecryptedToFile(
-            {
-                "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
-                "Sender" : senderDecr,
-                "Reciever" : recieverDecr,
-                "Message" : finalDecrypted
-            })     #changing finalDecrypted from bytes to str because dict must only contain strings
-    
-    elif outModeEncrypt == 1 :    
-        saveDecryptedToFile(
+            saveDecryptedContent(
             {
                 "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
                 "Sender" : senderDecr,
                 "Reciever" : recieverDecr,
                 "Message" : finalDecrypted
             })
-    else : printDecrypted(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
+    
+    elif outModeEncrypt == 1 :    
+        saveDecryptedContent(
+            {
+                "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
+                "Sender" : senderDecr,
+                "Reciever" : recieverDecr,
+                "Message" : finalDecrypted
+            })
+    else : printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
 
 
-def printDecrypted(senderDecr, recieverDecr, finalDecrypted, date, time) :
+def printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, date, time) :
     printy("This message was created " + date + ' at ' + time, "c>")
     print("")
 
@@ -722,14 +722,13 @@ def printDecrypted(senderDecr, recieverDecr, finalDecrypted, date, time) :
 
     print("")
 
-
-def saveDecryptedToFile(dico: dict) :  
+#func used to save decrypted output to a human-readable file
+def saveDecryptedContent(dico: dict) :  
     fileName = askCheckFilename("Decrypted.txt")
     
     fileToWrite = open(fileName, 'w')
     for element in dico.keys() :
-        if dico[element] != None :                                        #used to avoid writing None elements i.e. in RSA mode where sender reciever and time = None
-            fileToWrite.write(element + " : " + dico[element] + "\n")
+        fileToWrite.write(element + " : " + dico[element] + "\n")
     fileToWrite.close()
 
     printy("Success : decrypted data has been saved to " + fileName, 'n')
@@ -739,7 +738,7 @@ def askCheckFilename(defaultName: str) :
     printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
     printy("If the name you enter is not a valid one, " + defaultName, 'c', end = ' ')
     printy("will be used", 'c')
-    fileNameInput = inputy("Enter file name : ")
+    fileNameInput = input("Enter file name : ")
     print("")
 
     #because e.g. filname is "abc" then abc[-4:] returns "abc" and ".txt" is 4 char long so in order to have a valid name both len() > 4 and ends with ".txt" is required
@@ -748,7 +747,7 @@ def askCheckFilename(defaultName: str) :
         return defaultName
     else : return fileNameInput
 
-def findDayDate(date) :
+def findDayName(date) :
     dayNumber = datetime.strptime(date, '%d %m %Y').weekday()
     return (day_name[dayNumber])
 

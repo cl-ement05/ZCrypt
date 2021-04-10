@@ -885,6 +885,7 @@ def settings() :
                 choice = input("Input : ")
                 try :
                     choice = int(choice)
+                    assert (choice & (choice-1) == 0) and choice != 0      #checking if choice is power of 2
                     if choice > 4096 or choice < 256 :
                         printy("Warning : you entered a non-recomended value. Expect low security/crashes/slowness when generating keys", 'y')
                         rsaKeyBytes = choice
@@ -893,6 +894,8 @@ def settings() :
                         printy("Success : set RSA keys length to " + str(choice) + " bytes", 'n')
                 except ValueError :
                     printy("Error : please enter an integer", "m")
+                except AssertionError :
+                    printy("Error : please enter a power of 2", "m")
 
             else :
                 printy("Error : the option you tried to view does not exists or does have a number assigned to it", "m")

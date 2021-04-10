@@ -69,26 +69,16 @@ This is usually because the file does not match ZCrypt requirements.
 Here is the list of the Error Codes and their meaning :
 
 I) Errors starting with E1XX : Operating-System-Level error
-- E101 : your file does not exist or is corrupted and cannot be read by your system
+- E101 : your file does not exist, is corrupted or cannot be read (check permissions)
 
 II) Errors starting with E2XX : File does not match basic ZCrypt requirements
-- E201 : the file has more or less than 5 lines (and ZCrypt needs 5 lines in the file)
-- E202 : one or more lines couldn't be read (convert to string impossible so unknow character type)
+- E201 : the file's length does not match the length ZCrypt expected 
+- E202 : one or more lines couldn't be read (convert to string/bytes impossible due to unknow character type)
 
-III) Errors starting with E3XX : File does not match advanced requirements of ZCrypt
+III) Errors starting with E3XX : File does not match advanced requirements of ZCrypt encryption mode
 - E301 : the first line (which contains time informations) couldn't be read (convert to string impossible so unknow character type)
 - E302 : the first line that contains time informations is less or more than 29 characters long
 - E313 : the fourth line which contains the encrypting key couldn't be converted to a number which made ZCrypt unable to understand it
 - E314 : the fourth line that contains encrypting key is less or more than 9 characters long
 - E325 : the fith line which contains the whole message couldn't be converted to a specific type of character which led to a an impossible understanding
 - E326 : the fith line that contains the whole message does not contain a ';' wich is needed, at least one time, to decrypt the message
-
-
-
-
-
-
-
-
-
-

@@ -5,7 +5,6 @@ from printy import printy, inputy
 import rsa
 import base64 as b64
 
-file = ''
 Error_Code = str()
 
 #Default settings
@@ -50,11 +49,11 @@ def ZfileCheck() -> bool :
         line5 = text[4]
 
         try :
-            assert(type(line1) == str)
-            assert(type(line2) == str)
-            assert(type(line3) == str)
-            assert(type(line4) == str)
-            assert(type(line5) == str)
+            assert type(line1) == str
+            assert type(line2) == str
+            assert type(line3) == str
+            assert type(line4) == str
+            assert type(line5) == str
         except AssertionError :
             Error_Code = "E202"
             return False
@@ -62,7 +61,7 @@ def ZfileCheck() -> bool :
 
         if len(line1) == 29 :                                                              #29 because there is a \n at the end of the line and the n is a character
             try :
-                assert(type(int(line1[:28]))) is int
+                assert type(int(line1[:28])) is int
             except (ValueError, AssertionError) :
                 Error_Code = "E301"
                 return False
@@ -72,7 +71,7 @@ def ZfileCheck() -> bool :
 
         if len(line4) == 9 :
             try :
-                assert(type(int(line4, 2))) is int
+                assert type(int(line4, 2)) is int
             except (ValueError, AssertionError) :
                 Error_Code = "E313"
                 return False
@@ -82,7 +81,7 @@ def ZfileCheck() -> bool :
 
         if ';' in line5 :
             try :
-                assert(type(int(line5[:24]))) is int
+                assert type(int(line5[:24])) is int
             except (ValueError, AssertionError) :
                 Error_Code = "E325"
                 return False
@@ -121,7 +120,7 @@ def RfileCheck() :
             currentByte = file.read(1)
         
         try :
-            assert(len(lines) == 4)
+            assert len(lines) == 4
         except AssertionError : 
             Error_Code = "E201"
             return False
@@ -164,7 +163,7 @@ def RretrieveKey() :
             file = open(fileNameInput, "r")
             keys = file.readlines()
             try :
-                assert(len(keys) == 5)
+                assert len(keys) == 5
                 n = int(keys[0])
                 e = int(keys[1])
                 d = int(keys[2])
@@ -271,7 +270,7 @@ def encryptTime(mode) :
             pubKey))
         
 
-    assert(len(finalTimeEncr) == 28)
+    assert len(finalTimeEncr) == 28
     return finalTimeEncr
 
 
@@ -359,7 +358,7 @@ def encryptMessage(mode, message_input) :
                 for asciiNbr in range(3) :
                     letterBinary.append(format(int(str(asciiEncr)[asciiNbr]), '08b'))
 
-            assert(len(letterBinary) == 3)
+            assert len(letterBinary) == 3
 
             letterBinary.append(';')                                       #Adds the separator (;) to create a difference between de letters
             letter_str = ''
@@ -887,7 +886,7 @@ def settings() :
                 try :
                     choice = int(choice)
                     if choice > 4096 or choice < 256 :
-                        printy("Warning : you entered non-recomended values. Expect low security/crashes/slowness when generating keys", 'y')
+                        printy("Warning : you entered a non-recomended value. Expect low security/crashes/slowness when generating keys", 'y')
                         rsaKeyBytes = choice
                     else :
                         rsaKeyBytes = choice

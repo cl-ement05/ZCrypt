@@ -120,6 +120,12 @@ def RfileCheck() :
                 currentLine += currentByte
             currentByte = file.read(1)
         
+        try :
+            assert(len(lines) == 4)
+        except AssertionError : 
+            Error_Code = "E201"
+            return False
+
         line1 = b64.b64decode(lines[0])
         line2 = b64.b64decode(lines[1])
         line3 = b64.b64decode(lines[2])
@@ -165,7 +171,7 @@ def RretrieveKey() :
                 p = int(keys[3])
                 q = int(keys[4])
             except (ValueError, AssertionError) :
-                printy("Error : this file does not contain valid data about the private key", "m")
+                printy("Error : this file does not contain valid data", "m")
                 return None
 
         except FileNotFoundError : 
@@ -456,74 +462,85 @@ def writeFile(mode: str, messageW: list or bytes, *args: str or bytes) :
 
 #All decrypt child functions
 #Decrypts the date and time
-def ZdecryptTime() :
-    #Here, the entire line1 that contains the date is spread into different variables
-    chSize = 2
-    date = line1[:(chSize * 8)]
-    time = line1[(chSize * 8):len(line1) - 1]
+def decryptTime(mode) :
+    if mode == "z" :
+        #Here, the entire line1 that contains the date is spread into different variables
+        chSize = 2
+        date = line1[:(chSize * 8)]
+        time = line1[(chSize * 8):len(line1) - 1]
 
-    #Decrypting date
-    dateDecr = str()
-    for number in range(0, len(date), 2) :
-        dateDecr += str(int(date[number] + date[number + 1]) - decryptKey)      #decrypting each digit with the key
-                            #here we loop with a step of 2 since 1 decrypted digit -> 2 encrypted digits (because key > 10)
-    #spreading decrypted date into different variables
-    dayDecrypted = dateDecr[:2]
-    monthDecrypted = dateDecr[2:4]
-    yearDecrypted = dateDecr[4:]
+        #Decrypting date
+        dateDecr = str()
+        for number in range(0, len(date), 2) :
+            dateDecr += str(int(date[number] + date[number + 1]) - decryptKey)      #decrypting each digit with the key
+                                #here we loop with a step of 2 since 1 decrypted digit -> 2 encrypted digits (because key > 10)
+        #spreading decrypted date into different variables
+        dayDecrypted = dateDecr[:2]
+        monthDecrypted = dateDecr[2:4]
+        yearDecrypted = dateDecr[4:]
 
-    if len(str(dayDecrypted)) == 1 :
-        nbr = str(dayDecrypted)[0]
-        dayDecrypted = str(0) + str(nbr)
+        if len(str(dayDecrypted)) == 1 :
+            nbr = str(dayDecrypted)[0]
+            dayDecrypted = str(0) + str(nbr)
 
-    if len(str(monthDecrypted)) == 1 :
-        nbr = str(monthDecrypted)[0]
-        monthDecrypted = str(0) + str(nbr)
+        if len(str(monthDecrypted)) == 1 :
+            nbr = str(monthDecrypted)[0]
+            monthDecrypted = str(0) + str(nbr)
 
-    
-    #Decrypting time (same as date)
-    timeDecr = str()
-    for number in range(0, len(time), 2) :
-        timeDecr += str(int(time[number] + time[number + 1]) - decryptKey)
+        
+        #Decrypting time (same as date)
+        timeDecr = str()
+        for number in range(0, len(time), 2) :
+            timeDecr += str(int(time[number] + time[number + 1]) - decryptKey)
 
-    hourDecrypted = timeDecr[:2]
-    minDecrypted = timeDecr[2:4]
-    secDecrypted = timeDecr[4:]
+        hourDecrypted = timeDecr[:2]
+        minDecrypted = timeDecr[2:4]
+        secDecrypted = timeDecr[4:]
 
-    if len(str(hourDecrypted)) == 1 :
-        nbr = str(hourDecrypted)[0]
-        hourDecrypted = str(0) + str(nbr)
+        if len(str(hourDecrypted)) == 1 :
+            nbr = str(hourDecrypted)[0]
+            hourDecrypted = str(0) + str(nbr)
 
-    if len(str(minDecrypted)) == 1 :
-        nbr = str(minDecrypted)[0]
-        minDecrypted = str(0) + str(nbr)
+        if len(str(minDecrypted)) == 1 :
+            nbr = str(minDecrypted)[0]
+            minDecrypted = str(0) + str(nbr)
 
-    if len(str(secDecrypted)) == 1 :
-        nbr = str(secDecrypted)[0]
-        secDecrypted = str(0) + str(nbr)
+        if len(str(secDecrypted)) == 1 :
+            nbr = str(secDecrypted)[0]
+            secDecrypted = str(0) + str(nbr)
 
-    return dayDecrypted, monthDecrypted, yearDecrypted, hourDecrypted, minDecrypted, secDecrypted
-
-def ZdecryptSender() :
-    senderEncr = line2
-    senderDecr = ''
-    for character in range(len(senderEncr)) :
-        sender_chr = ord(senderEncr[character])
-        senderDecr += chr(ZmainDecrypt(sender_chr))
-
-    senderDecr = senderDecr[:(len(senderDecr) - 1)]                                                  #This line removes the 0 that spaws after the name
-    return senderDecr
+        return dayDecrypted, monthDecrypted, yearDecrypted, hourDecrypted, minDecrypted, secDecrypted
+    else :
+        date = rsa.decrypt(line1, privKey).decode()
+        return (date[:2], date[3:5], date[6:10], date[11:13], date[14:16], date[17:])         #formatting to match decryptTime() Z mode format
 
 
-def ZdecryptReciever() :
-    recieverEncr = line3
-    recieverDecr = ''
-    for character in range(len(recieverEncr)) :
-        reciever_chr = ord(recieverEncr[character])
-        recieverDecr += chr(ZmainDecrypt(reciever_chr))
+def decryptSender(mode) :
+    if mode == "z" :
+        senderEncr = line2
+        senderDecr = ''
+        for character in range(len(senderEncr)) :
+            sender_chr = ord(senderEncr[character])
+            senderDecr += chr(ZmainDecrypt(sender_chr))
 
-    recieverDecr = recieverDecr[:(len(recieverDecr) - 1)]                                                  #This line removes the 0 that spawns after the name
-    return recieverDecr    
+        senderDecr = senderDecr[:(len(senderDecr) - 1)]                                                  #This line removes the 0 that spaws after the name
+        return senderDecr
+    else :
+        return rsa.decrypt(line2, privKey).decode()
+
+
+def decryptReciever(mode) :
+    if mode == "z" :
+        recieverEncr = line3
+        recieverDecr = ''
+        for character in range(len(recieverEncr)) :
+            reciever_chr = ord(recieverEncr[character])
+            recieverDecr += chr(ZmainDecrypt(reciever_chr))
+
+        recieverDecr = recieverDecr[:(len(recieverDecr) - 1)]                                                  #This line removes the 0 that spawns after the name
+        return recieverDecr
+    else :
+        return rsa.decrypt(line3, privKey).decode()   
 
 #main decrypt engine
 def ZmainDecrypt(toencrypt: int) -> int :
@@ -555,44 +572,60 @@ def ZmainDecrypt(toencrypt: int) -> int :
     else : return decryptedAscii
 
 #decrypting message
-def ZdecryptMessage() :
-    finalDecrypted = ''
+def decryptMessage(mode) :
+    if mode == "z" :
+        finalDecrypted = ''
 
-    nbr_letters = int(len(line5) / 25)
-    message_encr = line5.split(";")
-    for letter in range(nbr_letters) :
-        encrCharacter = message_encr[letter]
+        nbr_letters = int(len(line5) / 25)
+        message_encr = line5.split(";")
+        for letter in range(nbr_letters) :
+            encrCharacter = message_encr[letter]
 
-        #Transforms the binary string into an ascii number
-        binaryCh1 = encrCharacter[:8]
-        encrypted_ascii1 = int(binaryCh1, 2)
+            #Transforms the binary string into an ascii number
+            binaryCh1 = encrCharacter[:8]
+            encrypted_ascii1 = int(binaryCh1, 2)
 
-        a = encrCharacter[8:]
-        binaryCh2 = a[:8]
-        encrypted_ascii2 = int(binaryCh2, 2)
+            a = encrCharacter[8:]
+            binaryCh2 = a[:8]
+            encrypted_ascii2 = int(binaryCh2, 2)
 
-        binary_ch3 = encrCharacter[16:]
-        encrypted_ascii3 = int(binary_ch3, 2)
+            binary_ch3 = encrCharacter[16:]
+            encrypted_ascii3 = int(binary_ch3, 2)
 
-        charAsciiEncr = int(str(encrypted_ascii1) + str(encrypted_ascii2) + str(encrypted_ascii3))            # Joins the three ascii numbers got from the binaries
-        #print("Encrypted ascii:", charAsciiEncr)
-        #The encrypt/decrypt method is different for pair/impair numbers
-        decryptedAscii = ZmainDecrypt(charAsciiEncr)
+            charAsciiEncr = int(str(encrypted_ascii1) + str(encrypted_ascii2) + str(encrypted_ascii3))            # Joins the three ascii numbers got from the binaries
+            #print("Encrypted ascii:", charAsciiEncr)
+            #The encrypt/decrypt method is different for pair/impair numbers
+            decryptedAscii = ZmainDecrypt(charAsciiEncr)
 
-        finalDecrypted += chr(decryptedAscii)
-    return finalDecrypted
-
-def RmainDecrypt() :
-    try :
-        mess = rsa.decrypt(line5, privKey)
-        date = rsa.decrypt(line1, privKey).decode()
-        sender = rsa.decrypt(line2, privKey)
-        reciever = rsa.decrypt(line3, privKey)
-        dateFormatted = (date[:2], date[3:5], date[6:10], date[11:13], date[14:16], date[17:])         #formatting to match ZdecryptTime() return format
-    except rsa.DecryptionError :
-        printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
+            finalDecrypted += chr(decryptedAscii)
+        return finalDecrypted
     else :
-        processDecrypted(mess.decode(), sender.decode(), reciever.decode(), dateFormatted)
+        return rsa.decrypt(line5, privKey).decode()
+
+def prepareDecryptedOutput(mode) :
+    global privKey
+    if mode == "z" :
+        printy("Info : entering ZCrypt decryption mode...", "c")
+        if ZfileCheck() :
+            printy("Your file was successfully checked and no file integrity errors were found. Continuing...", "n")
+            ZretrieveKey()
+            processDecrypted(decryptMessage("z"), decryptSender("z"), decryptReciever("z"), decryptTime("z"))
+        else :
+            printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
+            print("Aborting...")
+    else :
+        printy("Info : entering RSA decryption mode...", "c")
+        if RfileCheck() :
+            printy("Your file was successfully checked and no file integrity errors were found. Continuing...", "n")
+            privKey = RretrieveKey()
+            if privKey != None :
+                try :
+                    processDecrypted(decryptMessage("rsa"), decryptSender("rsa"), decryptReciever("rsa"), decryptTime("rsa"))
+                except rsa.DecryptionError :
+                    printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
+        else :
+            printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
+            print("Aborting...")
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
 def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, dateDecr: tuple) :
@@ -905,23 +938,8 @@ if __name__ == '__main__' :
             printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
             file_name = input()
             if decryptMode.lower() == "zcrypt" :
-                printy("Info : entering ZCrypt decryption mode...", "c")
-                if ZfileCheck() :
-                    printy("Your file was successfully checked and no file integrity errors were found. Continuing...", "n")
-                    ZretrieveKey()
-                    processDecrypted(ZdecryptMessage(), ZdecryptSender(), ZdecryptReciever(), ZdecryptTime())
-                else :
-                    printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
-                    print("Aborting...")
-            else :
-                printy("Info : entering RSA decryption mode...", "c")
-                if RfileCheck() : 
-                    printy("Your file was successfully checked and no file integrity errors were found. Continuing...", "n")
-                    privKey = RretrieveKey()
-                    if privKey != None :
-                        RmainDecrypt()
-                    else : print("Aborting...")
-                else : printy("Error : file not found or corrupted", "m")
+                prepareDecryptedOutput("z")
+            else : prepareDecryptedOutput("rsa")
 
         elif "settings" in command :
             settings()
@@ -930,7 +948,7 @@ if __name__ == '__main__' :
             if Error_Code != "" :
                 print("We are sorry to hear that your file has a problem")
                 print("Here is your error code :", Error_Code)
-                print("This is an excract from the UserManual where your error code is discussed")
+                print("This is an extract from the UserManual where your error code is discussed")
 
                 #Showing info about the error code starting with ...
                 manual_file = open("UserManual.txt", "r")

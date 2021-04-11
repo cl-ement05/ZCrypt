@@ -325,16 +325,16 @@ def encryptSender(mode, sender) :
             pubKey))
 
 #Encrypts receiver
-def encryptReciever(mode, reciever) :
+def encryptReciever(mode, receiver) :
     recieverEncr = ''
     if mode == "z" :
-        for character in range(len(reciever)) :        
-            recieverAscii = ord(reciever[character])
+        for character in range(len(receiver)) :        
+            recieverAscii = ord(receiver[character])
             recieverEncr += chr(ZmainEncrypt(recieverAscii))
         return recieverEncr
     else :
         return b64.b64encode(rsa.encrypt(
-            reciever.encode(), 
+            receiver.encode(), 
             pubKey))
 
 #Main encrypt engine
@@ -424,18 +424,18 @@ def prepareEncryptedOutput(cryptingMode: str) :
     else :
         mode = "RSA"
         printy("Info : entering RSA encryption mode...", "c")
-        printy("Warning : decrypting RSA messages is only supported on ZCrypt V3.0+, make sure the reciever meets this requirement", "y")
+        printy("Warning : decrypting RSA messages is only supported on ZCrypt V3.0+, make sure the receiver meets this requirement", "y")
         RcreateKey()
         print("")
 
     message_input = input("First, type the message you want to encrypt : ")
     sender = input("Please type your name that will be used in the file as the sender information : ")
-    reciever = input("Finally, type the reciever of this message : ")
+    receiver = input("Finally, type the receiver of this message : ")
 
     finalMessageBinary = encryptMessage("z" if mode == "z" else "rsa", message_input)
     finalTimeEncr = encryptTime("z" if mode == "z" else "rsa")
     senderEncr = encryptSender("z" if mode == "z" else "rsa", sender)
-    recieverEncr = encryptReciever("z" if mode == "z" else "rsa", reciever)
+    recieverEncr = encryptReciever("z" if mode == "z" else "rsa", receiver)
 
 
     txt = False                      #boolean variable which is set to true when the file name specified by user is valid that's to say, ends with ".txt"
@@ -729,7 +729,7 @@ def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, da
             {
                 "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
                 "Sender" : senderDecr,
-                "Reciever" : recieverDecr,
+                "receiver" : recieverDecr,
                 "Message" : finalDecrypted
             })
     
@@ -738,7 +738,7 @@ def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, da
             {
                 "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
                 "Sender" : senderDecr,
-                "Reciever" : recieverDecr,
+                "receiver" : recieverDecr,
                 "Message" : finalDecrypted
             })
     else : printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
@@ -751,7 +751,7 @@ def printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, date, time) 
     printy(senderDecr + " sent it !", "c>")
     print("")
 
-    printy(recieverDecr + " should recieve it !", "c>")
+    printy(recieverDecr + " should receive it !", "c>")
     print("")
 
     printy("The message is : " + finalDecrypted, "c>")
@@ -905,7 +905,7 @@ def settings() :
                 printy("If you choose ask, ZCrypt will always ask you if you want to use RSA or ZCrypt custom algorithm to encrypt your messages", "c")
                 printy("If you choose RSA, your messages will always be encrypted using RSA", "c")
                 printy("Lastly, as the name suggests, if you choose zcrypt, ZCrypt will always encrypt your messages using ZCrypt algorithm", "c")
-                printy("Note : ZCrypt algorithm is much less secure but offers many more features (such as addind a sender, reciever and date to your message. On the other hand RSA is much more secure (used by thousands of companies) but can only encrypt messages", "y")
+                printy("Note : ZCrypt algorithm is much less secure but offers many more features (such as addind a sender, receiver and date to your message. On the other hand RSA is much more secure (used by thousands of companies) but can only encrypt messages", "y")
                 choice = input("Input : ")
                 if choice.lower() == "ask" : encryptionMode = "ask"; printy("Successfully set encryption mode to " + choice, 'n')
                 elif choice.lower() == "rsa" : encryptionMode = "RSA"; printy("Successfully set encryption mode to " + choice, 'n')

@@ -15,7 +15,7 @@ outModeEncrypt = 0
 encryptionMode = "ask"
 rsaKeyBytes = 1024
 
-lastKey = 15                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
+lastKey = randint(10, 40)                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 
 
 def ZfileCheck() -> bool :
@@ -993,6 +993,6 @@ if __name__ == '__main__' :
             exit()
         
         else :
-            printy("Sorry this command is unknown. Please try again", "m")
+            printy("Error : unknown command, please try again", "m")
             if 'encr' in command : printy("Did you mean \"encrypt\" command ?", "y")
             elif 'decr' in command : printy("Did you mean \"decrypt\" command ?", "y")

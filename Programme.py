@@ -1,8 +1,6 @@
 from datetime import datetime
 from calendar import day_name
 from random import randint
-from printy import printy, inputy
-import rsa
 import base64 as b64
 
 Error_Code = str()
@@ -16,6 +14,50 @@ encryptionMode = "ask"
 rsaKeyBytes = 1024
 
 lastKey = randint(10, 40)                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
+
+
+def startUp() :
+    print("Info : ZCrypt is starting up...")
+    global printy, inputy, rsa
+    try :
+        from printy import printy, inputy
+    except ImportError :
+        if installModule("printy") :
+            from printy import printy, inputy
+        else :
+            print("Error : as printy is required to run ZCrypt, the program will not start")
+            print("Exiting...")
+            exit()
+    
+    try : import rsa
+    except ImportError : 
+        if installModule("rsa") :
+            import rsa
+        else :
+            print("Error : as rsa is required to run ZCrypt, the program will not start")
+            print("Exiting...")
+            exit()
+
+    print("Info : ZCrypt requirements are satified, continuing...")
+
+def installModule(moduleName: str) -> bool :
+    print("Error : it seems the " + moduleName + " module is not installed")
+    print("ZCrypt can either install it for you either you can install do it yourself")
+    print("Would you like ZCrypt to download and install " + moduleName + " ? (Y/n)", end = '')
+    answer = input(" ")
+    if answer.lower() != "n" :
+        print("Info : Installing " + moduleName + "...")
+        import os
+        try :
+            if os.system("pip3 install " + moduleName) == 0 :
+                print("Info : Installation was successful !")
+                print("")
+                return True
+        except OSError : 
+            print("There was an error. Check if the pip3 command is available")
+            return False
+    else : 
+        return False
 
 
 def ZfileCheck() -> bool :
@@ -228,7 +270,7 @@ def RcreateKey() :
     printy("Do you want to save your private key to a text file ? (Y/n) ", "c", end = ' ')
     answer = input("")
     if answer != "n" :
-        fileName = askCheckFilename("keys.txt")
+        fileName = askFilename("keys.txt")
         printy("Info : saving private key...", "c")
         file = open(fileName, "w")
         file.write(str(privKey.n) + "\n")
@@ -723,7 +765,7 @@ def printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, date, time) 
 
 #func used to save decrypted output to a human-readable file
 def saveDecryptedContent(dico: dict) :  
-    fileName = askCheckFilename("Decrypted.txt")
+    fileName = askFilename("Decrypted.txt")
     
     fileToWrite = open(fileName, 'w')
     for element in dico.keys() :
@@ -733,7 +775,7 @@ def saveDecryptedContent(dico: dict) :
     printy("Success : decrypted data has been saved to " + fileName, 'n')
 
 
-def askCheckFilename(defaultName: str) :
+def askFilename(defaultName: str) :
     printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
     printy("If the name you enter is not a valid one, " + defaultName, 'c', end = ' ')
     printy("will be used", 'c')
@@ -909,6 +951,8 @@ def settings() :
     
 
 if __name__ == '__main__' :
+    startUp()
+    
     #Welcome screen
     printy("#######################", "c>")
     printy("# Welcome to ZCrypt ! #", "c>")
@@ -990,6 +1034,7 @@ if __name__ == '__main__' :
 
         elif command == 'exit' :
             printy("Thank you for using ZCrypt ! See you soon...", "c")
+            printy("Info : exiting...", "c")
             exit()
         
         else :

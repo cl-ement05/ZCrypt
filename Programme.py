@@ -18,22 +18,17 @@ lastKey = randint(10, 40)                                            #This line 
 
 def startUp() :
     print("Info : ZCrypt is starting up...")
-    global printy, inputy, rsa
     try :
         from printy import printy, inputy
     except ImportError :
-        if installModule("printy") :
-            from printy import printy, inputy
-        else :
+        if not installModule("printy") :
             print("Error : as printy is required to run ZCrypt, the program will not start")
             print("Exiting...")
             exit()
     
     try : import rsa
     except ImportError : 
-        if installModule("rsa") :
-            import rsa
-        else :
+        if not installModule("rsa") :
             print("Error : as rsa is required to run ZCrypt, the program will not start")
             print("Exiting...")
             exit()
@@ -952,6 +947,8 @@ def settings() :
 
 if __name__ == '__main__' :
     startUp()
+    from printy import printy, inputy
+    import rsa
     
     #Welcome screen
     printy("#######################", "c>")

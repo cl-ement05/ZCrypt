@@ -439,45 +439,35 @@ def prepareEncryptedOutput(cryptingMode: str) :
     senderEncr = encryptSender("z" if mode == "z" else "rsa", sender)
     recieverEncr = encryptReciever("z" if mode == "z" else "rsa", receiver)
 
-
-    txt = False                      #boolean variable which is set to true when the file name specified by user is valid that's to say, ends with ".txt"
     fileOutput = settings['fileOutput']
-    for letter in range(len(fileOutput)) :
-        if fileOutput[letter] == '.' and fileOutput[letter + 1] == 't' and fileOutput[letter + 2] == 'x' and fileOutput[letter + 1] == 't' :
-            txt = True
 
-    if txt :
-        try :
-            open(fileOutput, "r")            #opening in read mode the name specified by the user so that if a file with the same already exists, no error will be raised
-        except FileNotFoundError :                         #else if an error is thrown, file was not found so no file will be overwritten -> writeFile
-            writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)
-        else :
-            if settings['warnBeforeOW'] :                          #boolean setting 1 -> warn user that a file will be overwritten
-                printy("Warning : " + fileOutput + " already exists", 'y')
-                printy("Warning : if you continue the encryption process, the existing file will be overwritten", 'y')
-                printy("Note : this operation cannot be undone", 'c')
-                printy("Note : we highly recommend you to backup this file if personnal infos are stored on it", 'c')
-                printy("Are you sure you want to continue ? (y/n)", 'y', end = '')
-                firstanswer = input(" ")
-                if firstanswer == "y" :
-                    printy(fileOutput, 'y', end = ' ')
-                    printy("will be overwritten !! Proceed anyway ? (y/n)", 'y', end ='')
-                    confirmation = input(" ")
-                    if confirmation == "y" :
-                        writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)   #after user confirmation that file can be overwritten -> writeFile
-                    else :
-                        printy("Info : encryption aborted", 'c') 
-                else :
-                    printy("Info : encryption aborted", 'c')     
-            
-            #if the warning has been disabled
-            else :
-                writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)
-                printy("Warning : a file has been overwritten", "y")
-
+    try :
+        open(fileOutput, "r")            #opening in read mode the name specified by the user so that if a file with the same already exists, no error will be raised
+    except FileNotFoundError :                         #else if an error is thrown, file was not found so no file will be overwritten -> writeFile
+        writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)
     else :
-        printy("Error : the name of the file you want to save is incorect. Please try another one !", 'm')
-
+        if settings['warnBeforeOW'] :                          #boolean setting 1 -> warn user that a file will be overwritten
+            printy("Warning : " + fileOutput + " already exists", 'y')
+            printy("Warning : if you continue the encryption process, the existing file will be overwritten", 'y')
+            printy("Note : this operation cannot be undone", 'c')
+            printy("Note : we highly recommend you to backup this file if personnal infos are stored on it", 'c')
+            printy("Are you sure you want to continue ? (y/n)", 'y', end = '')
+            firstanswer = input(" ")
+            if firstanswer == "y" :
+                printy(fileOutput, 'y', end = ' ')
+                printy("will be overwritten !! Proceed anyway ? (y/n)", 'y', end ='')
+                confirmation = input(" ")
+                if confirmation == "y" :
+                    writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)   #after user confirmation that file can be overwritten -> writeFile
+                else :
+                    printy("Info : encryption aborted", 'c') 
+            else :
+                printy("Info : encryption aborted", 'c')     
+        
+        #if the warning has been disabled
+        else :
+            writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)
+            printy("Warning : a file has been overwritten", "y")
 
 
 #Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
@@ -851,8 +841,12 @@ def runSettings() :
         elif 'set' in settingsCmd and len(settingsCmd) == 5 :
             if settingsCmd[4] == '1' :
                 fileOutput = input("Please enter the name of file you want to be saved as. Don't forget to ad (.txt) at the end ! : ")
-                printy("Sucess : the name of the output file has been successfully changed to", "n", end = ' ')
-                printy(fileOutput, 'n')
+                if not (len(fileOutput) > 4 and fileOutput[-4:] == ".txt") :
+                    printy("Warning : the name you entered is not valid. " + settings['fileOutput'] + " will be kept", "y")
+                else : 
+                    settings['fileOutput'] = fileOutput
+                    printy("Sucess : the name of the output file has been successfully changed to", "n", end = ' ')
+                    printy(fileOutput, 'n')
 
             elif settingsCmd[4] == '2' :
                 printy("You have the choice between 4 date formats : 1) dd/mm/YYYY, 2) dd/mm/YY, 3) YYYY-mm-dd or just the 4) plain text format", 'c')

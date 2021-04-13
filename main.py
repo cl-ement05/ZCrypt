@@ -6,12 +6,14 @@ import base64 as b64
 Error_Code = str()
 
 #Default settings
-fileOutput = "Mail.txt"
-dateFormat = '1'
-warnBeforeOW = True
-outModeEncrypt = 0
-encryptionMode = "ask"
-rsaKeyBytes = 1024
+settings = {
+    "fileOutput" : "Mail.txt",
+    "dateFormat" : '1',
+    "warnBeforeOW" : True,
+    "outModeEncrypt" : 0,
+    "encryptionMode" : "ask",
+    "rsaKeyBytes" : 1024
+}
 
 lastKey = randint(10, 40)                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 
@@ -252,7 +254,7 @@ def ZcreateKey() :
 def RcreateKey() :
     global privKey, pubKey, keyBin
     printy("Info : generating RSA keys", 'c')
-    (pubKey, privKey) = rsa.newkeys(rsaKeyBytes)
+    (pubKey, privKey) = rsa.newkeys(settings['rsaKeyBytes'])
     keyBin = pubKey          #sample value used to have 5 lines for all encrypted files no matter if it was encrypted with RSA or ZCrypt
     printy("Warning : here are your private key specs. DO NOT SHARE THEM UNLESS YOU KNOW WHAT YOU ARE DOING !", 'y')
     print("PrivateKey N : ", privKey.n)
@@ -439,7 +441,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
 
 
     txt = False                      #boolean variable which is set to true when the file name specified by user is valid that's to say, ends with ".txt"
-
+    fileOutput = settings['fileOutput']
     for letter in range(len(fileOutput)) :
         if fileOutput[letter] == '.' and fileOutput[letter + 1] == 't' and fileOutput[letter + 2] == 'x' and fileOutput[letter + 1] == 't' :
             txt = True
@@ -450,7 +452,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
         except FileNotFoundError :                         #else if an error is thrown, file was not found so no file will be overwritten -> writeFile
             writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)
         else :
-            if warnBeforeOW :                          #boolean setting 1 -> warn user that a file will be overwritten
+            if settings['warnBeforeOW'] :                          #boolean setting 1 -> warn user that a file will be overwritten
                 printy("Warning : " + fileOutput + " already exists", 'y')
                 printy("Warning : if you continue the encryption process, the existing file will be overwritten", 'y')
                 printy("Note : this operation cannot be undone", 'c')
@@ -481,7 +483,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
 #Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
 def writeFile(mode: str, messageW: list or bytes, *args: str or bytes) :
     #'\n' is used to go to a new line at every new file settings
-    file_w = open(fileOutput, "w" if mode == "z" else "wb")
+    file_w = open(settings['fileOutput'], "w" if mode == "z" else "wb")
     if mode == "z" :
         for elementToW in args :
             if elementToW is not None : file_w.write(elementToW + "\n")
@@ -689,6 +691,7 @@ def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, da
     print("")
 
     finalEntireDate, finalEntireTime = '', ''
+    dateFormat = settings['dateFormat']
     
     #changing the final str according to what user specified in dateFormat parameter
     if dateFormat == '1' :
@@ -718,7 +721,7 @@ def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, da
         
     finalEntireTime = dateDecr[3] + ':' + dateDecr[4] + ':' + dateDecr[5]
     
-    if outModeEncrypt == 0 :
+    if settings['outModeEncrypt'] == 0 :
         choiceMode = inputy("Would you like to output the encrypted content to be saved to a file or simply to be displayed on screen ? (FILE/print) ", "c")
         if choiceMode == "print" :
             printy("Info : entering print mode...")
@@ -733,7 +736,7 @@ def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, da
                 "Message" : finalDecrypted
             })
     
-    elif outModeEncrypt == 1 :    
+    elif settings['outModeEncrypt'] == 1 :    
         saveDecryptedContent(
             {
                 "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
@@ -788,13 +791,8 @@ def findDayName(date) :
     return (day_name[dayNumber])
 
 
-def settings() :
-    global fileOutput
-    global dateFormat
-    global warnBeforeOW
-    global outModeEncrypt
-    global encryptionMode
-    global rsaKeyBytes
+def runSettings() :
+    global settings
     print("")
 
     dateFormatDict = {
@@ -824,27 +822,27 @@ def settings() :
 
         if 'see' in settingsCmd and len(settingsCmd) == 5 :
             if settingsCmd[4] == '1' :
-                print("Your encrypted messages are currently saved with the following name :", fileOutput)
+                print("Your encrypted messages are currently saved with the following name :", settings['fileOutput'])
 
             elif settingsCmd[4] == '2' :
-                print("The date format is currently set to", dateFormat)
+                print("The date format is currently set to", settings['dateFormat'])
 
             elif settingsCmd[4] == '3' :
-                print(("Warning before overwrite is currently enabled" if warnBeforeOW else "No warning will be shown before you overwrite an existing file"))
+                print(("Warning before overwrite is currently enabled" if settings['warnBeforeOW'] else "No warning will be shown before you overwrite an existing file"))
             
             elif settingsCmd[4] == '4' :
-                if outModeEncrypt != 0 :
-                     printy("Any content you encrypt will be outputed to " + (file_name if outModeEncrypt == 1 else "screen directly"), "c")
+                if settings['outModeEncrypt'] != 0 :
+                     printy("Any content you encrypt will be outputed to " + (file_name if settings['outModeEncrypt'] == 1 else "screen directly"), "c")
                 else : printy("ZCrypt will always ask you if you want to save your encrypted content to a file or if you want to print it on screen", "c")
             
             elif settingsCmd[4] == '5' :
-                if encryptionMode == "ask" : printy("ZCrypt will always ask you if you want to encrypt a message using ZCrypt algorithm or RSA", 'c')
-                elif encryptionMode == "RSA" : printy("ZCrypt will always encrypt using RSA", "c")
+                if settings['encryptionMode'] == "ask" : printy("ZCrypt will always ask you if you want to encrypt a message using ZCrypt algorithm or RSA", 'c')
+                elif settings['encryptionMode'] == "RSA" : printy("ZCrypt will always encrypt using RSA", "c")
                 else : printy("ZCrypt will always encrypt your messages using ZCrypt algorithm")
 
             elif settingsCmd[4] == '6' :
                 printy("RSA uses public and private keys to encrypt/decrypt content. These keys are made of very high numbers (more than 20 digits)", "c")
-                printy("Currently RSA keys have a length of " + str(rsaKeyBytes) + " bits", "c")
+                printy("Currently RSA keys have a length of " + str(settings['rsaKeyBytes']) + " bits", "c")
             
             else :
                 printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
@@ -861,7 +859,7 @@ def settings() :
                 choice = inputy("Please enter the number of the date format you want to use (1, 2, 3 or 4) : ", 'c')
                 try :
                     if int(choice) <= 4 and int(choice) > 0 :
-                        dateFormat = choice
+                        settings['dateFormat'] = choice
                         printy('Success : set date format to ' + dateFormatDict[choice], 'n')
                     else :
                         printy("Error : " + choice + " is not an offered choice", 'm')
@@ -878,7 +876,7 @@ def settings() :
                 testdisable = input("Input : ")
                 if testdisable == "disable" :
                     printy("Caution : Warning before overwrite is now disabled", 'y')
-                    warnBeforeOW = False
+                    settings['warnBeforeOW'] = False
                 else :
                     printy("Nothing has been changed", 'n')
                     printy("Returning...", 'n')
@@ -893,7 +891,7 @@ def settings() :
                 choice = input("Input : ")
                 try :
                     if 0 <= int(choice) <= 2 : 
-                        outModeEncrypt = int(choice)
+                        settings['outModeEncrypt'] = int(choice)
                         printy("Success : set output mode to " + choice, 'n')
                     else : printy("Error : " + choice + " is not an offered choice", "m")
                 except ValueError :
@@ -907,12 +905,12 @@ def settings() :
                 printy("Lastly, as the name suggests, if you choose zcrypt, ZCrypt will always encrypt your messages using ZCrypt algorithm", "c")
                 printy("Note : ZCrypt algorithm is much less secure but offers many more features (such as addind a sender, receiver and date to your message. On the other hand RSA is much more secure (used by thousands of companies) but can only encrypt messages", "y")
                 choice = input("Input : ")
-                if choice.lower() == "ask" : encryptionMode = "ask"; printy("Successfully set encryption mode to " + choice, 'n')
-                elif choice.lower() == "rsa" : encryptionMode = "RSA"; printy("Successfully set encryption mode to " + choice, 'n')
-                elif choice.lower() == "zcrypt" : encryptionMode = "zcrypt"; printy("Successfully set encryption mode to " + choice, 'n')
+                if choice.lower() == "ask" : settings['encryptionMode'] = "ask"; printy("Successfully set encryption mode to " + choice, 'n')
+                elif choice.lower() == "rsa" : settings['encryptionMode'] = "RSA"; printy("Successfully set encryption mode to " + choice, 'n')
+                elif choice.lower() == "zcrypt" : settings['encryptionMode'] = "zcrypt"; printy("Successfully set encryption mode to " + choice, 'n')
                 else : 
                     printy("The value you entered is not valid. Please note that ZCrypt has been saved as default value", "m")
-                    encryptionMode = "zcrypt"
+                    settings['encryptionMode'] = "zcrypt"
 
             elif settingsCmd[4] == '6' :
                 printy("RSA uses public and private keys to encrypt/decrypt content. These keys are made of very high numbers (more than 20 digits)", "c")
@@ -925,9 +923,9 @@ def settings() :
                     assert (choice & (choice-1) == 0) and choice != 0      #checking if choice is power of 2
                     if choice > 4096 or choice < 256 :
                         printy("Warning : you entered a non-recomended value. Expect low security/crashes/slowness when generating keys", 'y')
-                        rsaKeyBytes = choice
+                        settings['rsaKeyBytes'] = choice
                     else :
-                        rsaKeyBytes = choice
+                        settings['rsaKeyBytes'] = choice
                         printy("Success : set RSA keys length to " + str(choice) + " bytes", 'n')
                 except ValueError :
                     printy("Error : please enter an integer", "m")
@@ -968,10 +966,10 @@ if __name__ == '__main__' :
         if "encrypt" in command :
             #Here, the user inputs all informations required to encrypt
             print("Ok ! Let's encrypt your message !")
-            if encryptionMode == "ask" :
+            if settings['encryptionMode'] == "ask" :
                 cryptMode = input("Do you want to crypt using ZCrypt algorithm or RSA (see Manual for details) ? (RSA/zcrypt) ")
                 prepareEncryptedOutput(cryptMode)
-            else : prepareEncryptedOutput(encryptionMode)
+            else : prepareEncryptedOutput(settings['encryptionMode'])
 
 
         elif "decrypt" in command :
@@ -984,7 +982,7 @@ if __name__ == '__main__' :
             else : prepareDecryptedOutput("rsa")
 
         elif "settings" in command :
-            settings()
+            runSettings()
 
         elif "showErrors" in command : 
             if Error_Code != "" :

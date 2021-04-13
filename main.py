@@ -189,8 +189,8 @@ def RretrieveKey() :
     printy("If you saved it when encrypting your message, the private key specs will be automatically retrieved", "c")
     printy("Otherwise you will need to remember and enter each value", "c")
 
-    print("Do you have your private key saved in a file ? (y/N) ", end = "")
-    if input("").lower() != "y" :
+    print("Do you have your private key saved in a file ? (Y/n) ", end = "")
+    if input("").lower() == "n" :
         n = input("Please enter the N value of your privKey : ")
         e = input("Please enter the e value of your privKey : ")
         d = input("Please enter the d value of your privKey : ")
@@ -722,11 +722,8 @@ def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, da
     finalEntireTime = dateDecr[3] + ':' + dateDecr[4] + ':' + dateDecr[5]
     
     if settings['outModeDecrypt'] == 0 :
-        choiceMode = inputy("Would you like to output the decrypted content to be saved to a file or simply to be displayed on screen ? (FILE/print) ", "c")
-        if choiceMode == "print" :
-            printy("Info : entering print mode...")
-            printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
-        else :
+        choiceMode = inputy("Would you like to output the decrypted content to be saved to a file or simply to be displayed on screen ? (PRINT/file) ", "c")
+        if choiceMode == "file" :
             printy("Info : entering file mode...")
             saveDecryptedContent(
             {
@@ -735,6 +732,9 @@ def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, da
                 "receiver" : recieverDecr,
                 "Message" : finalDecrypted
             })
+        else :
+            printy("Info : entering print mode...")
+            printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
     
     elif settings['outModeDecrypt'] == 1 :    
         saveDecryptedContent(
@@ -870,7 +870,7 @@ def runSettings() :
                 printy("When this happens, ZCrypt offers you to choice between overwriting the existing file or doing nothing", 'c')
                 printy("When the file is overwritten, you lose all the data stored on it. This is why we recommend you to backup its content before overwriting", 'c')
                 print("")
-                printy("If you have to save files often, these warning may bore you. If this is so you can disable this warning by typing \"disable\"", 'c')
+                printy("You can disable this warning by typing \"disable\"", 'c')
                 printy("You don't want to disable this warning type anything except \"disable\"", 'c')
                 printy("Please be careful when disabling this warning. You could lose important data and ZCrypt assumes no responsability in this. Do it at your own risk", 'm')
                 testdisable = input("Input : ")

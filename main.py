@@ -50,8 +50,11 @@ def installModule(moduleName: str) -> bool :
                 print("Info : Installation was successful !")
                 print("")
                 return True
+            else : 
+                print("Error : please try again")
+                return False
         except OSError : 
-            print("There was an error. Check if the pip3 command is available")
+            print("Error : try again and check if the pip3 command is available")
             return False
     else : 
         return False
@@ -255,7 +258,6 @@ def RcreateKey() :
     global privKey, pubKey, keyBin
     printy("Info : generating RSA keys", 'c')
     (pubKey, privKey) = rsa.newkeys(settings['rsaKeyBytes'])
-    keyBin = pubKey          #sample value used to have 5 lines for all encrypted files no matter if it was encrypted with RSA or ZCrypt
     printy("Warning : here are your private key specs. DO NOT SHARE THEM UNLESS YOU KNOW WHAT YOU ARE DOING !", 'y')
     print("PrivateKey N : ", privKey.n)
     print("PrivateKey e : ", privKey.e)
@@ -630,34 +632,42 @@ def decryptMessage(mode) :
     else :
         return rsa.decrypt(line5, privKey).decode()
 
-def prepareDecryptedOutput(mode) :
+#This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
+def prepareDecrypted(mode: str) :
+    #list of the months to know which month number corresponds to what month -> used for date format plain text
     global privKey
-    if mode == "z" :
+    if (mode == "z") :
         printy("Info : entering ZCrypt decryption mode...", "c")
         if ZfileCheck() :
             printy("Your file was successfully checked and no file integrity errors were found. Continuing...", "n")
             ZretrieveKey()
-            processDecrypted(decryptMessage("z"), decryptSender("z"), decryptReciever("z"), decryptTime("z"))
+            finalDecrypted = decryptMessage("z")
+            senderDecr = decryptSender("z")
+            recieverDecr = decryptReciever("z")
+            dateDecr = decryptTime("z")
         else :
             printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
             print("Aborting...")
-    else :
+            return
+    else : 
         printy("Info : entering RSA decryption mode...", "c")
         if RfileCheck() :
             printy("Your file was successfully checked and no file integrity errors were found. Continuing...", "n")
             privKey = RretrieveKey()
             if privKey != None :
                 try :
-                    processDecrypted(decryptMessage("rsa"), decryptSender("rsa"), decryptReciever("rsa"), decryptTime("rsa"))
+                    finalDecrypted = decryptMessage("rsa")
+                    senderDecr = decryptSender("rsa")
+                    recieverDecr = decryptReciever("rsa")
+                    dateDecr = decryptTime("rsa")
                 except rsa.DecryptionError :
                     printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
+                    return
         else :
             printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
             print("Aborting...")
-
-#This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
-def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, dateDecr: tuple) :
-    #list of the months to know which month number corresponds to what month -> used for date format plain text
+            return
+    
     references = {
 
         'months' : { 
@@ -971,8 +981,8 @@ if __name__ == '__main__' :
             printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
             file_name = input()
             if decryptMode.lower() == "zcrypt" :
-                prepareDecryptedOutput("z")
-            else : prepareDecryptedOutput("rsa")
+                prepareDecrypted("z")
+            else : prepareDecrypted("rsa")
 
         elif "settings" in command :
             runSettings()

@@ -822,7 +822,7 @@ def runSettings() :
 
         if 'see' in settingsCmd and len(settingsCmd) == 5 :
             if settingsCmd[4] == '1' :
-                print("Your encrypted messages are currently saved with the following name :", settings['fileOutput'])
+                print("Your encrypted messages are currently saved in a file named :", settings['fileOutput'])
 
             elif settingsCmd[4] == '2' :
                 print("The date format is currently set to", settings['dateFormat'])
@@ -882,10 +882,9 @@ def runSettings() :
                     printy("Returning...", 'n')
 
             elif settingsCmd[4] == "4" :
-                printy("Starting from V2.3 you can now chose what you want ZCrypt to do with your decrypted content", 'c')
                 printy("3 values are available for this setting : 0, 1 and 2", "c")
                 printy("If you choose 0, ZCrypt will always ask you if you want to save to a file or just show the content on screen", "c")
-                printy("If you choose 1, ZCrypt will always save your decrypted content to a file, here " + settings['fileOutput'], "c")
+                printy("If you choose 1, ZCrypt will always save your decrypted content to a file", "c")
                 printy("If you choose 2, ZCrypt will always output your descrypted content to your screen", "c")
                 printy("Note : mode 2 works just like ZCypt used to function in releases before V2.3", 'c')
                 choice = input("Input : ")

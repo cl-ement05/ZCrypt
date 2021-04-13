@@ -20,6 +20,7 @@ lastKey = randint(10, 40)                                            #This line 
 
 def startUp() :
     print("Info : ZCrypt is starting up...")
+    global printy, inputy, rsa
     try :
         from printy import printy, inputy
     except ImportError :
@@ -632,9 +633,8 @@ def decryptMessage(mode) :
     else :
         return rsa.decrypt(line5, privKey).decode()
 
-#This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does action following the outMode setting 4
+#This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does something according setting 4
 def prepareDecrypted(mode: str) :
-    #list of the months to know which month number corresponds to what month -> used for date format plain text
     global privKey
     if (mode == "z") :
         printy("Info : entering ZCrypt decryption mode...", "c")
@@ -668,6 +668,7 @@ def prepareDecrypted(mode: str) :
             print("Aborting...")
             return
     
+    #list of the months to know which month number corresponds to what month -> used for date format plain text
     references = {
 
         'months' : { 
@@ -948,9 +949,7 @@ def runSettings() :
 
 if __name__ == '__main__' :
     startUp()
-    from printy import printy, inputy
-    import rsa
-    
+
     #Welcome screen
     printy("#######################", "c>")
     printy("# Welcome to ZCrypt ! #", "c>")

@@ -10,7 +10,7 @@ settings = {
     "fileOutput" : "Mail.txt",
     "dateFormat" : '1',
     "warnBeforeOW" : True,
-    "outModeEncrypt" : 0,
+    "outModeDecrypt" : 0,
     "encryptionMode" : "ask",
     "rsaKeyBytes" : 1024
 }
@@ -721,8 +721,8 @@ def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, da
         
     finalEntireTime = dateDecr[3] + ':' + dateDecr[4] + ':' + dateDecr[5]
     
-    if settings['outModeEncrypt'] == 0 :
-        choiceMode = inputy("Would you like to output the encrypted content to be saved to a file or simply to be displayed on screen ? (FILE/print) ", "c")
+    if settings['outModeDecrypt'] == 0 :
+        choiceMode = inputy("Would you like to output the decrypted content to be saved to a file or simply to be displayed on screen ? (FILE/print) ", "c")
         if choiceMode == "print" :
             printy("Info : entering print mode...")
             printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
@@ -736,7 +736,7 @@ def processDecrypted(finalDecrypted: str, senderDecr: str, recieverDecr: str, da
                 "Message" : finalDecrypted
             })
     
-    elif settings['outModeEncrypt'] == 1 :    
+    elif settings['outModeDecrypt'] == 1 :    
         saveDecryptedContent(
             {
                 "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
@@ -808,7 +808,7 @@ def runSettings() :
     printy("    - 1: encrypted file name", "c")
     printy("    - 2: date display format", "c")
     printy("    - 3: warn before overwrite", "c")
-    printy("    - 4: encrypted content output mode", "c")
+    printy("    - 4: decrypted content output mode", "c")
     printy("    - 5: encryption and decryption algorithm", "c")
     printy("    - 6: RSA keys size (number of bits)\n", "c")
 
@@ -831,9 +831,9 @@ def runSettings() :
                 print(("Warning before overwrite is currently enabled" if settings['warnBeforeOW'] else "No warning will be shown before you overwrite an existing file"))
             
             elif settingsCmd[4] == '4' :
-                if settings['outModeEncrypt'] != 0 :
-                     printy("Any content you encrypt will be outputed to " + (file_name if settings['outModeEncrypt'] == 1 else "screen directly"), "c")
-                else : printy("ZCrypt will always ask you if you want to save your encrypted content to a file or if you want to print it on screen", "c")
+                if settings['outModeDecrypt'] != 0 :
+                     printy("Any content you decrypt will be outputed to " + (file_name if settings['outModeDecrypt'] == 1 else "screen directly"), "c")
+                else : printy("ZCrypt will always ask you if you want to save your decrypted content to a file or if you want to print it on screen", "c")
             
             elif settingsCmd[4] == '5' :
                 if settings['encryptionMode'] == "ask" : printy("ZCrypt will always ask you if you want to encrypt a message using ZCrypt algorithm or RSA", 'c')
@@ -882,16 +882,16 @@ def runSettings() :
                     printy("Returning...", 'n')
 
             elif settingsCmd[4] == "4" :
-                printy("Starting from V2.3 you can now chose what you want ZCrypt to do with your encrypted content", 'c')
+                printy("Starting from V2.3 you can now chose what you want ZCrypt to do with your decrypted content", 'c')
                 printy("3 values are available for this setting : 0, 1 and 2", "c")
                 printy("If you choose 0, ZCrypt will always ask you if you want to save to a file or just show the content on screen", "c")
-                printy("If you choose 1, ZCrypt will always save your encrypted content to a file, here " + fileOutput, "c")
-                printy("If you choose 2, ZCrypt will always output your encrypted content to your screen", "c")
+                printy("If you choose 1, ZCrypt will always save your decrypted content to a file, here " + settings['fileOutput'], "c")
+                printy("If you choose 2, ZCrypt will always output your descrypted content to your screen", "c")
                 printy("Note : mode 2 works just like ZCypt used to function in releases before V2.3", 'c')
                 choice = input("Input : ")
                 try :
                     if 0 <= int(choice) <= 2 : 
-                        settings['outModeEncrypt'] = int(choice)
+                        settings['outModeDecrypt'] = int(choice)
                         printy("Success : set output mode to " + choice, 'n')
                     else : printy("Error : " + choice + " is not an offered choice", "m")
                 except ValueError :

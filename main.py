@@ -15,7 +15,7 @@ settings = {
     "rsaKeyBytes" : 1024
 }
 
-lastKey = randint(10, 40)                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
+lastKey = randint(35, 100)                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 
 
 def startUp() :
@@ -102,34 +102,36 @@ def ZfileCheck() -> bool :
             return False
 
 
-        if len(line1) == 29 :                                                              #29 because there is a \n at the end of the line and the n is a character
+        if len(line1) == 43 :                                                              #29 because there is a \n at the end of the line and the n is a character
             try :
-                assert type(int(line1[:28])) is int
-            except (ValueError, AssertionError) :
+                int(line1[:28])
+            except ValueError :
                 Error_Code = "E301"
                 return False
         else :
-            Error_Code = "E302"
+            Error_Code = "E301"
             return False
 
-        if len(line4) == 9 :
+        if "b" in line4 :
             try :
-                assert type(int(line4, 2)) is int
-            except (ValueError, AssertionError) :
-                Error_Code = "E313"
+                int(line4[:8], 2)
+                int(line4[9:15])
+            except ValueError :
+                Error_Code = "E304"
                 return False
         else :
-            Error_Code = "E314"
+            Error_Code = "E304"
             return False
+        
 
         if ';' in line5 :
             try :
-                assert type(int(line5[:24])) is int
-            except (ValueError, AssertionError) :
-                Error_Code = "E325"
+                int(line5[:24])
+            except ValueError :
+                Error_Code = "E305"
                 return False
         else :
-            Error_Code = "E326"
+            Error_Code = "E305"
             return False
     
     return True
@@ -179,14 +181,16 @@ def RfileCheck() :
 #Here all functions are defined
 #Gets the key which is encrypted in binary
 def ZretrieveKey() :
-    key = line4
-    global keyMethod
-    global decryptKey
-    decryptKey = int(key, 2)
+    global keyMethod, decryptKey, limitHigh, limitLow
+    
+    keys = line4
+    decryptKey = int(keys[:8], 2)
     if decryptKey % 2 == 0 :
         keyMethod = 'plus'
     else :
         keyMethod = 'minus'
+
+    limitLow, limitHigh = int(keys[9:11]), int(keys[11:14])
 
 def RretrieveKey() :
     printy("In order to decrypt a message that was encrypted with RSA, a private key is needed", "c")
@@ -229,28 +233,19 @@ def RretrieveKey() :
 
 #Encrypts the key
 def ZcreateKey() :
-    global keyNum
-    global keyBin
-    global lastKey
-    keyNum = randint(10, 40)
-    #All this part tests if the current key is far enough from the last key to the message be securely encyrpted
-    key_diff = False
-    while key_diff == False :
-            
-        if keyNum > lastKey :
-            if (keyNum - lastKey) > 15 :
-                key_diff = True
-            else :
-                keyNum = randint(10, 40)
-            
-        elif keyNum < lastKey :
-            if (lastKey - keyNum) > 15 :
-                key_diff = True
-            else :
-                keyNum = randint(10, 40)
-            
-        elif keyNum == lastKey :
-                keyNum = randint(10, 40)
+    global keyNum, keyBin, lastKey, limitHigh, limitLow
+
+    #creating new limits
+    limitLow = randint(10, 31)
+    limitHigh = randint(100, 255)
+    
+    keyNum = randint(limitHigh - 65, limitHigh - limitLow)
+    #All this part tests if the current key is far enough from the last key
+    while True :
+        if abs(keyNum - lastKey) > 5 :
+            break
+        else :
+            keyNum = randint(limitHigh - 65, limitHigh - limitLow)
     
     lastKey = keyNum
     keyBin = format(keyNum, '08b')
@@ -289,30 +284,30 @@ def encryptTime(mode) :
     finalTimeEncr = ''
     finalTimeList = list()
     now = datetime.now()
-    current_time = now.strftime("%d/%m/%Y %H:%M:%S")
+    currentTime = now.strftime("%d/%m/%Y %H:%M:%S")
 
     if mode == "z" :
-        for element in range(len(current_time)) :
-            #This try is used to skip date characters like (/ and :) that cannot be encrypted and will be removed
+        for element in currentTime :
+            #This try is used to skip date characters like (/ and :) that will be removed in order to make decrypt easier to process (especially because of dateFormat)
             try :
-                int(current_time[element])
+                int(element)
             except ValueError :
-                if current_time[element] != '/' and current_time[element] != ':' and current_time[element] != ' ' :
-                    printy("Error : runtime error. Please try again", "m")
+                if element != '/' and element != ':' and element != ' ' :
+                    printy("Error : unexpected error. Please try again", "m")
                     exit()
 
             #If the try passes and the current element is an integer (so a number that is part from the date), encyption starts
             else :
-                encrypted_int = int(str(current_time[element])) + int(keyNum)
-                finalTimeList.append(str(encrypted_int))
+                encryptedInt = int(element) + int(keyNum)
+                finalTimeList.append(str(encryptedInt))
         finalTimeEncr = "".join(finalTimeList)
     else :
         return b64.b64encode(rsa.encrypt(
-            current_time.encode(), 
+            currentTime.encode(), 
             pubKey))
         
 
-    assert len(finalTimeEncr) == 28
+    assert len(finalTimeEncr) == 42
     return finalTimeEncr
 
 
@@ -320,9 +315,9 @@ def encryptTime(mode) :
 def encryptSender(mode, sender) :
     senderEncr = ''
     if mode =="z" :
-        for character in range(len(sender)) :
-            senderAscii = ord(sender[character])
-            senderEncr += chr(ZmainEncrypt(senderAscii))
+        for letter in sender :
+            senderAscii = ord(letter)
+            senderEncr += ZmainEncrypt(senderAscii)
         return senderEncr
     else :
         return b64.b64encode(rsa.encrypt(
@@ -333,9 +328,9 @@ def encryptSender(mode, sender) :
 def encryptReciever(mode, receiver) :
     recieverEncr = ''
     if mode == "z" :
-        for character in range(len(receiver)) :        
-            recieverAscii = ord(receiver[character])
-            recieverEncr += chr(ZmainEncrypt(recieverAscii))
+        for letter in receiver :        
+            recieverAscii = ord(letter)
+            recieverEncr += ZmainEncrypt(recieverAscii)
         return recieverEncr
     else :
         return b64.b64encode(rsa.encrypt(
@@ -343,71 +338,59 @@ def encryptReciever(mode, receiver) :
             pubKey))
 
 #Main encrypt engine
-def ZmainEncrypt(toEncrypt: int) -> int :             #takes a single int argument which must be the ascii representation of a char; returns the encrypted ascii
+def ZmainEncrypt(toEncrypt: int) -> str :             #takes a single int argument which must be the ascii representation of a char; returns the binary representation of the encrypted ascii
     #If the key is a pair number
     if keyNum % 2 == 0 :
-        if toEncrypt - keyNum >= 33 :
+        if toEncrypt - keyNum >= limitLow :
             encrypted = toEncrypt - keyNum
 
-        elif toEncrypt - keyNum < 33 :
+        else :
             cut = 0
-            while toEncrypt >= 33 :
+            while toEncrypt >= limitLow :
                 toEncrypt -= 1
                 cut += 1
             remainingKey = keyNum - cut
-            encrypted = 126 - remainingKey
+            encrypted = limitHigh - remainingKey
 
     #If the key is an impair number
     elif keyNum % 2 == 1 :
-        if toEncrypt + keyNum <= 126 :
+        if toEncrypt + keyNum <= limitHigh :
             encrypted = toEncrypt + keyNum
 
-        elif toEncrypt + keyNum > 126 :
+        else :
             cut = 0
-            while toEncrypt <= 126 :
+            while toEncrypt <= limitHigh :
                 toEncrypt += 1
                 cut += 1
             remainingKey = keyNum - cut
-            encrypted = 33 + remainingKey
+            encrypted = limitLow + remainingKey
 
-    return encrypted
+    letterBinary = list()
+    #If the Ascii number contains only two numbers, the programm adds a 0 in front oh the two to get a number with 3 binaires at the end
+    if len(str(encrypted)) == 2 :
+        letterBinary.append('00000000')
+        for asciiNbr in range(2) :
+            letterBinary.append(format(int(str(encrypted)[asciiNbr]), '08b'))
+
+    elif len(str(encrypted)) == 3 :
+        for asciiNbr in range(3) :
+            letterBinary.append(format(int(str(encrypted)[asciiNbr]), '08b'))
+    
+    letterBinary.append(";")                                                       #Adds the separator (;) to separate letters
+    return ''.join(letterBinary)
 
 
 # Crypting the message
 def encryptMessage(mode, message_input) :
-    finalMessageBinary = list()
+    finalMessageBinary = str()
 
     if mode == "z" :
-        for i in range(len(message_input)) :
+        for letter in message_input :
             #Transforms the character in its ascii number
-            currentChr = message_input[i]
-            asciiChr = ord(currentChr)
+            asciiChr = ord(letter)
+            letterBinary = ZmainEncrypt(asciiChr)
 
-            #Spaces are encoded as is they were "~" (its ascii is 126) so to avoid errors, the programm does not support this character
-            if asciiChr == 126 :
-                printy("Error : your message contains a character that is not supported", "m")
-                break
-
-            asciiEncr = ZmainEncrypt(asciiChr)
-            letterBinary = list()
-            #If the Ascii number contains only two numbers, the programm adds a 0 in front oh the two to get a number with 3 binaires at the end
-            if len(str(asciiEncr)) == 2 :
-                letterBinary.append('00000000')
-                for asciiNbr in range(2) :
-                    letterBinary.append(format(int(str(asciiEncr)[asciiNbr]), '08b'))
-
-            elif len(str(asciiEncr)) == 3 :
-                for asciiNbr in range(3) :
-                    letterBinary.append(format(int(str(asciiEncr)[asciiNbr]), '08b'))
-
-            assert len(letterBinary) == 3
-
-            letterBinary.append(';')                                       #Adds the separator (;) to create a difference between de letters
-            letter_str = ''
-            for x in range(4) :
-                letter_str += letterBinary[x]
-
-            finalMessageBinary.append(letter_str)
+            finalMessageBinary += letterBinary
 
         printy("Info : Your key is : " + str(keyNum), 'c')
         return finalMessageBinary
@@ -417,7 +400,6 @@ def encryptMessage(mode, message_input) :
             pubKey))
 
 
-
 #Get all settings and encrypted variables from child functions and starts the writeFile function to apply changes
 def prepareEncryptedOutput(cryptingMode: str) :
 
@@ -425,6 +407,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
         mode = "z"
         printy("Info : entering ZCrypt encryption mode...", "c")
         ZcreateKey()                          #creates a new key shared accross whole program
+        keyToWrite = keyBin + 'b' + str(limitLow) + str(limitHigh)
 
     else :
         mode = "RSA"
@@ -447,7 +430,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
     try :
         open(fileOutput, "r")            #opening in read mode the name specified by the user so that if a file with the same already exists, no error will be raised
     except FileNotFoundError :                         #else if an error is thrown, file was not found so no file will be overwritten -> writeFile
-        writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)
+        writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
     else :
         if settings['warnBeforeOW'] :                          #boolean setting 1 -> warn user that a file will be overwritten
             printy("Warning : " + fileOutput + " already exists", 'y')
@@ -461,31 +444,29 @@ def prepareEncryptedOutput(cryptingMode: str) :
                 printy("will be overwritten !! Proceed anyway ? (y/n)", 'y', end ='')
                 confirmation = input(" ")
                 if confirmation == "y" :
-                    writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)   #after user confirmation that file can be overwritten -> writeFile
+                    writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)   #after user confirmation that file can be overwritten -> writeFile
                 else :
                     printy("Info : encryption aborted", 'c') 
             else :
-                printy("Info : encryption aborted", 'c')     
+                printy("Info : encryption aborted", 'c')
         
         #if the warning has been disabled
         else :
-            writeFile(mode, finalMessageBinary, finalTimeEncr, senderEncr, recieverEncr, keyBin if mode == "z" else None)
+            writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
             printy("Warning : a file has been overwritten", "y")
 
 
 #Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
-def writeFile(mode: str, messageW: list or bytes, *args: str or bytes) :
+def writeFile(mode: str, *args: str or bytes) :
     #'\n' is used to go to a new line at every new file settings
     file_w = open(settings['fileOutput'], "w" if mode == "z" else "wb")
     if mode == "z" :
         for elementToW in args :
             if elementToW is not None : file_w.write(elementToW + "\n")
-        file_w.write("".join(messageW))
         file_w.close()
     else :
         for elementToW in args :
             if elementToW is not None : file_w.write(elementToW + '|'.encode("utf8"))
-        file_w.write(messageW + '|'.encode('utf8'))
         file_w.close()
 
     printy("Success : your message has been securely encrypted !", 'n')
@@ -496,15 +477,15 @@ def writeFile(mode: str, messageW: list or bytes, *args: str or bytes) :
 def decryptTime(mode) :
     if mode == "z" :
         #Here, the entire line1 that contains the date is spread into different variables
-        chSize = 2
+        chSize = 3
         date = line1[:(chSize * 8)]
         time = line1[(chSize * 8):len(line1) - 1]
 
         #Decrypting date
         dateDecr = str()
-        for number in range(0, len(date), 2) :
-            dateDecr += str(int(date[number] + date[number + 1]) - decryptKey)      #decrypting each digit with the key
-                                #here we loop with a step of 2 since 1 decrypted digit -> 2 encrypted digits (because key > 10)
+        for number in range(0, len(date), 3) :
+            dateDecr += str(int(date[number] + date[number + 1] + date[number + 2]) - decryptKey)      #decrypting each digit with the key
+                                #here we loop with a step of chSize since 1 decrypted digit -> chSize encrypted digits (depends of keyNum)
         #spreading decrypted date into different variables
         dayDecrypted = dateDecr[:2]
         monthDecrypted = dateDecr[2:4]
@@ -521,8 +502,8 @@ def decryptTime(mode) :
         
         #Decrypting time (same as date)
         timeDecr = str()
-        for number in range(0, len(time), 2) :
-            timeDecr += str(int(time[number] + time[number + 1]) - decryptKey)
+        for number in range(0, len(time), 3) :
+            timeDecr += str(int(time[number] + time[number + 1] + time[number + 2]) - decryptKey)
 
         hourDecrypted = timeDecr[:2]
         minDecrypted = timeDecr[2:4]
@@ -548,13 +529,10 @@ def decryptTime(mode) :
 
 def decryptSender(mode) :
     if mode == "z" :
-        senderEncr = line2
+        senderEncr = line2.split(";")[:-1]
         senderDecr = ''
-        for character in range(len(senderEncr)) :
-            sender_chr = ord(senderEncr[character])
-            senderDecr += chr(ZmainDecrypt(sender_chr))
-
-        senderDecr = senderDecr[:(len(senderDecr) - 1)]                                                  #This line removes the 0 that spaws after the name
+        for encrBits in senderEncr :
+            senderDecr += chr(ZmainDecrypt(encrBits))
         return senderDecr
     else :
         return rsa.decrypt(line2, privKey).decode()
@@ -562,72 +540,53 @@ def decryptSender(mode) :
 
 def decryptReciever(mode) :
     if mode == "z" :
-        recieverEncr = line3
+        recieverEncr = line3.split(";")[:-1]
         recieverDecr = ''
-        for character in range(len(recieverEncr)) :
-            reciever_chr = ord(recieverEncr[character])
-            recieverDecr += chr(ZmainDecrypt(reciever_chr))
-
-        recieverDecr = recieverDecr[:(len(recieverDecr) - 1)]                                                  #This line removes the 0 that spawns after the name
+        for encrBits in recieverEncr :
+            recieverDecr += chr(ZmainDecrypt(encrBits))
         return recieverDecr
     else :
         return rsa.decrypt(line3, privKey).decode()   
 
 #main decrypt engine
-def ZmainDecrypt(toencrypt: int) -> int :
+def ZmainDecrypt(bitsOfAscii: str) -> int :         #bitsOfAscii must be an str containing 24 bits
+    encryptedAscii = str(int(bitsOfAscii[:8], 2)) + str(int(bitsOfAscii[8:16], 2)) + str(int(bitsOfAscii[16:], 2))   # Joins the three ascii numbers got from the binaries
+    toDecrypt = int(encryptedAscii)
+    
     if keyMethod == 'plus' :
-        if toencrypt + decryptKey <= 126 :
-            decryptedAscii = toencrypt + decryptKey
+        if toDecrypt + decryptKey <= limitHigh :
+            decryptedAscii = toDecrypt + decryptKey
             
-        elif toencrypt + decryptKey > 126 :                     # Will be triggered if the decrypted ascii number is out of range of the ascii table
+        elif toDecrypt + decryptKey > limitHigh :                     # Will be triggered if the decrypted ascii number is out of range of the ascii table
             cut = 0
-            while toencrypt <= 126 :
-                toencrypt += 1
+            while toDecrypt <= limitHigh :
+                toDecrypt += 1
                 cut += 1
             remainingKey = decryptKey - cut
-            decryptedAscii = 33 + remainingKey
+            decryptedAscii = limitLow + remainingKey
 
     elif keyMethod == 'minus' :
-        if toencrypt - decryptKey >= 33 :
-            decryptedAscii = toencrypt - decryptKey
+        if toDecrypt - decryptKey >= limitLow :
+            decryptedAscii = toDecrypt - decryptKey
             
-        elif toencrypt - decryptKey < 33 :
+        elif toDecrypt - decryptKey < limitLow :
             cut = 0
-            while toencrypt >= 33 :
-                toencrypt -= 1
+            while toDecrypt >= limitLow :
+                toDecrypt -= 1
                 cut += 1
             remainingKey = decryptKey - cut
-            decryptedAscii = 126 - remainingKey
+            decryptedAscii = limitHigh - remainingKey
     
-    if decryptedAscii == 126 : return 32    #Since spaces are encrypted as a "~", if the programm finds a 126 number (which is the ascii code of ~), it changes the ~ character into a space
-    else : return decryptedAscii
+    return decryptedAscii
 
 #decrypting message
 def decryptMessage(mode) :
     if mode == "z" :
         finalDecrypted = ''
 
-        nbr_letters = int(len(line5) / 25)
-        message_encr = line5.split(";")
-        for letter in range(nbr_letters) :
-            encrCharacter = message_encr[letter]
-
-            #Transforms the binary string into an ascii number
-            binaryCh1 = encrCharacter[:8]
-            encrypted_ascii1 = int(binaryCh1, 2)
-
-            a = encrCharacter[8:]
-            binaryCh2 = a[:8]
-            encrypted_ascii2 = int(binaryCh2, 2)
-
-            binary_ch3 = encrCharacter[16:]
-            encrypted_ascii3 = int(binary_ch3, 2)
-
-            charAsciiEncr = int(str(encrypted_ascii1) + str(encrypted_ascii2) + str(encrypted_ascii3))            # Joins the three ascii numbers got from the binaries
-            #print("Encrypted ascii:", charAsciiEncr)
-            #The encrypt/decrypt method is different for pair/impair numbers
-            decryptedAscii = ZmainDecrypt(charAsciiEncr)
-
+        messageEncr = line5.split(";")[:-1]   #used to not decrypt \n which would raise an error
+        for encrBits in messageEncr :
+            decryptedAscii = ZmainDecrypt(encrBits)
             finalDecrypted += chr(decryptedAscii)
         return finalDecrypted
     else :

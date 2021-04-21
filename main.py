@@ -85,11 +85,11 @@ def ZfileCheck() -> bool :
             return False
 
         #Assigns a variable name with the line number to each element (line) in the file
-        line1 = text[0]
-        line2 = text[1]
-        line3 = text[2]
-        line4 = text[3]
-        line5 = text[4]
+        line1 = text[0][:-1]
+        line2 = text[1][:-1]
+        line3 = text[2][:-1]
+        line4 = text[3][:-1]
+        line5 = text[4][:-1]
 
         try :
             assert type(line1) == str
@@ -102,9 +102,9 @@ def ZfileCheck() -> bool :
             return False
 
 
-        if len(line1) == 43 :                                                              #29 because there is a \n at the end of the line and the n is a character
+        if len(line1) == 42 :
             try :
-                int(line1[:28])
+                int(line1[:42])
             except ValueError :
                 Error_Code = "E301"
                 return False
@@ -123,14 +123,9 @@ def ZfileCheck() -> bool :
             Error_Code = "E304"
             return False
         
-
-        if ';' in line5 :
-            try :
-                int(line5[:24])
-            except ValueError :
-                Error_Code = "E305"
-                return False
-        else :
+        try :
+            int(line5)
+        except ValueError :
             Error_Code = "E305"
             return False
     
@@ -376,7 +371,6 @@ def ZmainEncrypt(toEncrypt: int) -> str :             #takes a single int argume
         for asciiNbr in range(3) :
             letterBinary.append(format(int(str(encrypted)[asciiNbr]), '08b'))
     
-    letterBinary.append(";")                                                       #Adds the separator (;) to separate letters
     return ''.join(letterBinary)
 
 
@@ -479,7 +473,7 @@ def decryptTime(mode) :
         #Here, the entire line1 that contains the date is spread into different variables
         chSize = 3
         date = line1[:(chSize * 8)]
-        time = line1[(chSize * 8):len(line1) - 1]
+        time = line1[(chSize * 8):len(line1)]
 
         #Decrypting date
         dateDecr = str()
@@ -529,7 +523,7 @@ def decryptTime(mode) :
 
 def decryptSender(mode) :
     if mode == "z" :
-        senderEncr = line2.split(";")[:-1]
+        senderEncr = [line2[i:i+24] for i in range(0, len(line2), 24)]
         senderDecr = ''
         for encrBits in senderEncr :
             senderDecr += chr(ZmainDecrypt(encrBits))
@@ -540,7 +534,7 @@ def decryptSender(mode) :
 
 def decryptReciever(mode) :
     if mode == "z" :
-        recieverEncr = line3.split(";")[:-1]
+        recieverEncr = [line3[i:i+24] for i in range(0, len(line3), 24)]
         recieverDecr = ''
         for encrBits in recieverEncr :
             recieverDecr += chr(ZmainDecrypt(encrBits))
@@ -584,7 +578,7 @@ def decryptMessage(mode) :
     if mode == "z" :
         finalDecrypted = ''
 
-        messageEncr = line5.split(";")[:-1]   #used to not decrypt \n which would raise an error
+        messageEncr = [line5[i:i+24] for i in range(0, len(line5), 24)]
         for encrBits in messageEncr :
             decryptedAscii = ZmainDecrypt(encrBits)
             finalDecrypted += chr(decryptedAscii)

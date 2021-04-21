@@ -78,4 +78,4 @@ II) Errors starting with E2XX : File does not match basic ZCrypt requirements
 III) Errors starting with E3XX : File does not match advanced requirements of ZCrypt encryption mode
 - E301 : the first line (which contains time informations) couldn't be read OR is less or more than 43 characters long
 - E304 : the fourth line does not match zcrypt format requirements
-- E305 : the fith line which contains the whole message couldn't be converted to an integer OR does not contain a semi-colon wich is needed, at least one time
+- E305 : the fith line which contains the whole message couldn't be converted to an integer

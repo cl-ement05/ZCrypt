@@ -1,6 +1,5 @@
 from datetime import datetime
 from calendar import day_name
-from os import name
 from random import randint
 import base64 as b64
 

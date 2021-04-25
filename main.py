@@ -1,5 +1,6 @@
 from datetime import datetime
 from calendar import day_name
+from os import name
 from random import randint
 import base64 as b64
 
@@ -16,50 +17,6 @@ settings = {
 }
 
 lastKey = randint(35, 100)                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
-
-
-def startUp() :
-    print("Info : ZCrypt is starting up...")
-    global printy, inputy, rsa
-    try :
-        from printy import printy, inputy
-    except ImportError :
-        if not installModule("printy") :
-            print("Error : as printy is required to run ZCrypt, the program will not start")
-            print("Exiting...")
-            exit()
-    
-    try : import rsa
-    except ImportError : 
-        if not installModule("rsa") :
-            print("Error : as rsa is required to run ZCrypt, the program will not start")
-            print("Exiting...")
-            exit()
-
-    print("Info : ZCrypt requirements are satified, continuing...")
-
-def installModule(moduleName: str) -> bool :
-    print("Error : it seems the " + moduleName + " module is not installed")
-    print("ZCrypt can either install it for you either you can install do it yourself")
-    print("Would you like ZCrypt to download and install " + moduleName + " ? (Y/n)", end = '')
-    answer = input(" ")
-    if answer.lower() != "n" :
-        print("Info : Installing " + moduleName + "...")
-        import os
-        try :
-            if os.system("pip3 install " + moduleName) == 0 :
-                print("Info : Installation was successful !")
-                print("")
-                return True
-            else : 
-                print("Error : please try again")
-                return False
-        except OSError : 
-            print("Error : try again and check if the pip3 command is available")
-            return False
-    else : 
-        return False
-
 
 def ZfileCheck() -> bool :
 #All this section checks the file integrity and assings all the lines to a dynamic variable
@@ -901,7 +858,26 @@ def runSettings() :
     
 
 if __name__ == '__main__' :
-    startUp()
+    try :
+        from printy import printy, inputy
+        import rsa
+    except ImportError :
+        print("Error : it seems at least one ZCrypt requirement, a module in this case, is not satisfied")
+        print("ZCrypt can install the missing modules for you. If you don't want to do so you are also free to install them")
+        answer = input("Would like to proceed to automatic installation ? (Y/n) ")
+        if answer.lower() != "n" :
+            print("Info : installing missing dependencies...")
+            import os
+            command = ("python" if os.name == "nt" else "python3") + " -m pip install -r PackageRequirements.txt"
+            if not os.system(command) :
+                print("Success : missing modules were successfully installed !")
+                from printy import printy, inputy
+                import rsa
+                print("Info : ZCrypt requirements are satified, continuing...")
+            else : 
+                print("Error : please make sure pip is installed and try again")
+                exit()
+        else : exit()
 
     #Welcome screen
     printy("#######################", "c>")

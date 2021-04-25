@@ -14,6 +14,7 @@ settings = {
     "encryptionMode" : "ask",
     "rsaKeyBytes" : 1024
 }
+manifestAddress = "https://raw.githubusercontent.com/cl-ement05/ZCrypt/master/manifest.json"
 
 lastKey = randint(35, 100)                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 

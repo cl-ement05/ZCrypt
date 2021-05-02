@@ -1,2 +1,0 @@
-3) auto updates
-4) auto-detect file mode (rsa/zcrypt)

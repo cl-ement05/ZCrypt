@@ -689,8 +689,9 @@ def saveDecryptedContent(dico: dict) :
 
 # UTILS
 def askFilename(defaultName: str, message: str = "Please enter the name of file you want to save. ", fileExp: str = ".txt") :
-    printy(message + "Please note this name MUST end with " + fileExp, 'c')
-    printy("If the name you enter is not a valid one, " + defaultName, 'c', end = ' ')
+    printy(message, 'c')
+    printy("Please note this name MUST end with " + fileExp, "c")
+    printy("If the name you enter is not a valid one, " + defaultName + fileExp, 'c', end = ' ')
     printy("will be used", 'c')
     fileNameInput = input("Enter file name : ")
     print("")
@@ -711,7 +712,7 @@ def downloadFile(fileUrl: str, fileName: str, fileExtension: str, afterDownloadM
     fileName = askFilename(fileName, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)
     with open(fileName, "wb") as fileToWrite :
         fileToWrite.write(downloadedFile)
-    printy("Info : " + manifestData['version'] + " was successfully downloaded" + afterDownloadMessage, "c")
+    printy("Info : " + manifestData['versionName'] + " was successfully downloaded" + afterDownloadMessage, "c")
 
 
 def runSettings() :

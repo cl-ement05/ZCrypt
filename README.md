@@ -15,6 +15,8 @@ Feel free to commit improvements and enjoy !
 * Let ZCrypt automatically fetch and install modules for you
 1. have the `pip3` command installed and available (see [pip docs](https://pip.pypa.io/en/stable/installing/) to install)
 
+## License 
+ZCrypt is under the [GNU GPLv3 license](LICENSE.md)
 # Special thanks
 Edraobdu for his amazing [printy module](https://github.com/edraobdu/printy) 
 

@@ -894,30 +894,43 @@ if __name__ == '__main__' :
                 exit()
         else : exit()
 
-    req = requests.get(manifestAddress)
-    manifestData = req.json()['ZCrypt']
-    latestMajorVersion, latestMinorVersion = manifestData['versionCode'].split(".")
-    if int(latestMinorVersion) > int(ZCryptMinorVersion) :
-        printy("Info : A new update is available for ZCrypt !", "c")
-        printy("You are currently running " + ZCryptVersionName + " but you can update it to " + manifestData['versionName'], "c")
-        answer = inputy("Do you want to install this update ? (Y/n) ", "c")
-        if answer.lower() != "n" :
-            import urllib.request as urlr
-            downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py", ", ZCrypt will now quit. Please run the new version file")
-            input("Press any key to continue...")
-            exit()
-    elif int(latestMajorVersion) > int(ZCryptMajorVersion) :
-        printy("A new major update has been released for ZCrypt !", "c")
-        printy("Warning : changing between major versions means API change. If you install this new version, you will NOT be able to decrypt messages encrypted with another major version number", "y")
-        printy("Info : You are currently running " + ZCryptVersionName + " and latest version (which can be downloaded) is " + manifestData['versionName'], "n")
-        answer = inputy("Do you want to install " + manifestData['versionName'] + " ? (Y/n) ", "c")
-        if answer.lower() != "n" :
-            import urllib.request as urlr
-            downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py", ", ZCrypt will now quit. Please run the new version file")
-            input("Press any key to continue...")
-            exit()
+    try :
+        req = requests.get(manifestAddress)
+        manifestData = req.json()['ZCrypt']
+    except :
+        printy("Warning : there was an error while fetching ZCrypt online manifest. Maybe your device is offline", "y")
+        printy("Warning : since latest information about ZCrypt could not be fetched, ZCrypt won't check for updates", "y")
+    else :
+        latestMajorVersion, latestMinorVersion = manifestData['versionCode'].split(".")
+        if int(latestMinorVersion) > int(ZCryptMinorVersion) :
+            printy("Info : A new update is available for ZCrypt !", "c")
+            printy("You are currently running " + ZCryptVersionName + " but you can update it to " + manifestData['versionName'], "c")
+            answer = inputy("Do you want to install this update ? (Y/n) ", "c")
+            if answer.lower() != "n" :
+                import urllib.request as urlr
+                try :
+                    downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py", ", ZCrypt will now quit. Please run the new version file")
+                except :
+                    printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
+                else :
+                    input("Press any key to continue...")
+                    exit()
+        elif int(latestMajorVersion) > int(ZCryptMajorVersion) :
+            printy("A new major update has been released for ZCrypt !", "c")
+            printy("Warning : changing between major versions means API change. If you install this new version, you will NOT be able to decrypt messages encrypted with another major version number", "y")
+            printy("Info : You are currently running " + ZCryptVersionName + " and latest version (which can be downloaded) is " + manifestData['versionName'], "n")
+            answer = inputy("Do you want to install " + manifestData['versionName'] + " ? (Y/n) ", "c")
+            if answer.lower() != "n" :
+                import urllib.request as urlr
+                try : 
+                    downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py", ", ZCrypt will now quit. Please run the new version file")
+                except :
+                    printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
+                else :
+                    input("Press any key to continue...")
+                    exit()
 
-    else : printy("Info : ZCrypt is up to date", "c")       
+        else : printy("Info : ZCrypt is up to date", "c")       
 
 
     #Welcome screen

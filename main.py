@@ -2,6 +2,7 @@ from datetime import datetime
 from calendar import day_name
 from random import randint
 import base64 as b64
+import requests
 
 Error_Code = str()
 
@@ -15,6 +16,9 @@ settings = {
     "rsaKeyBytes" : 1024
 }
 manifestAddress = "https://raw.githubusercontent.com/cl-ement05/ZCrypt/master/manifest.json"
+ZCryptMinorVersion = "1"
+ZCryptMajorVersion = "3"
+ZCryptVersionName = "ZCrypt V3.1"
 
 lastKey = randint(35, 100)                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 
@@ -683,16 +687,16 @@ def saveDecryptedContent(dico: dict) :
 
     printy("Success : decrypted data has been saved to " + fileName, 'n')
 
-
-def askFilename(defaultName: str) :
-    printy("Please enter the name of file you want to save. Please note this name MUST end with .txt", 'c')
+# UTILS
+def askFilename(defaultName: str, message: str = "Please enter the name of file you want to save. ", fileExp: str = ".txt") :
+    printy(message + "Please note this name MUST end with " + fileExp, 'c')
     printy("If the name you enter is not a valid one, " + defaultName, 'c', end = ' ')
     printy("will be used", 'c')
     fileNameInput = input("Enter file name : ")
     print("")
 
     #because e.g. filname is "abc" then abc[-4:] returns "abc" and ".txt" is 4 char long so in order to have a valid name both len() > 4 and ends with ".txt" is required
-    if not (len(fileNameInput) > 4 and fileNameInput[-4:] == ".txt") :
+    if not (len(fileNameInput) > len(fileExp) and fileNameInput[-len(fileExp):] == fileExp) :
         printy("Warning : the name you entered is not valid. " + defaultName + " will be used instead", "y")
         return defaultName
     else : return fileNameInput
@@ -700,6 +704,14 @@ def askFilename(defaultName: str) :
 def findDayName(date) :
     dayNumber = datetime.strptime(date, '%d %m %Y').weekday()
     return (day_name[dayNumber])
+
+def downloadFile(fileUrl: str, fileName: str, fileExtension: str, afterDownloadMessage: str = "") :
+    printy("Info : Downloading " + fileName, "c")
+    downloadedFile = urlr.urlopen(fileUrl).read()
+    fileName = askFilename(fileName, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)
+    with open(fileName, "wb") as fileToWrite :
+        fileToWrite.write(downloadedFile)
+    printy("Info : " + manifestData['version'] + " was successfully downloaded" + afterDownloadMessage, "c")
 
 
 def runSettings() :
@@ -858,6 +870,8 @@ def runSettings() :
     
 
 if __name__ == '__main__' :
+    print(ZCryptVersionName)
+    print("Info : ZCrypt is starting up...")
     try :
         from printy import printy, inputy
         import rsa
@@ -878,6 +892,32 @@ if __name__ == '__main__' :
                 print("Error : please make sure pip is installed and try again")
                 exit()
         else : exit()
+
+    req = requests.get(manifestAddress)
+    manifestData = req.json()['ZCrypt']
+    latestMajorVersion, latestMinorVersion = manifestData['versionCode'].split(".")
+    if int(latestMinorVersion) > int(ZCryptMinorVersion) :
+        printy("Info : A new update is available for ZCrypt !", "c")
+        printy("You are currently running " + ZCryptVersionName + " but you can update it to " + manifestData['versionName'], "c")
+        answer = inputy("Do you want to install this update ? (Y/n) ", "c")
+        if answer.lower() != "n" :
+            import urllib.request as urlr
+            downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py", ", ZCrypt will now quit. Please run the new version file")
+            input("Press any key to continue...")
+            exit()
+    elif int(latestMajorVersion) > int(ZCryptMajorVersion) :
+        printy("A new major update has been released for ZCrypt !", "c")
+        printy("Warning : changing between major versions means API change. If you install this new version, you will NOT be able to decrypt messages encrypted with another major version number", "y")
+        printy("Info : You are currently running " + ZCryptVersionName + " and latest version (which can be downloaded) is " + manifestData['versionName'], "n")
+        answer = inputy("Do you want to install " + manifestData['versionName'] + " ? (Y/n) ", "c")
+        if answer.lower() != "n" :
+            import urllib.request as urlr
+            downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py", ", ZCrypt will now quit. Please run the new version file")
+            input("Press any key to continue...")
+            exit()
+
+    else : printy("Info : ZCrypt is up to date", "c")       
+
 
     #Welcome screen
     printy("#######################", "c>")

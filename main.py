@@ -3,17 +3,19 @@ from calendar import day_name
 from random import randint
 import base64 as b64
 import requests
+import os
 
 Error_Code = str()
 
 #Default settings
-settings = {
+defaultSettings = {
     "fileOutput" : "Mail.txt",
     "dateFormat" : '1',
     "warnBeforeOW" : True,
     "outModeDecrypt" : 0,
     "encryptionMode" : "ask",
-    "rsaKeyBytes" : 1024
+    "rsaKeyBytes" : 1024,
+    "checkForUpdates" : "atStart"
 }
 manifestAddress = "https://raw.githubusercontent.com/cl-ement05/ZCrypt/master/manifest.json"
 ZCryptMinorVersion = "1"
@@ -706,14 +708,78 @@ def findDayName(date) :
     dayNumber = datetime.strptime(date, '%d %m %Y').weekday()
     return (day_name[dayNumber])
 
-def downloadFile(fileUrl: str, fileName: str, fileExtension: str, afterDownloadMessage: str = "") :
+def downloadFile(fileUrl: str, fileName: str, fileExtension: str) :
     printy("Info : Downloading " + fileName, "c")
     downloadedFile = urlr.urlopen(fileUrl).read()
     fileName = askFilename(fileName, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)
     with open(fileName, "wb") as fileToWrite :
         fileToWrite.write(downloadedFile)
-    printy("Info : " + manifestData['versionName'] + " was successfully downloaded" + afterDownloadMessage, "c")
+    printy("Success : " + manifestData['versionName'] + " was successfully downloaded" + afterDownloadMessage, "c")
 
+def update() :
+    try :
+        req = requests.get(manifestAddress)
+        manifestData = req.json()['ZCrypt']
+    except :
+        printy("Warning : there was an error while fetching ZCrypt online manifest. Maybe your device is offline", "y")
+        printy("Warning : since latest information about ZCrypt could not be fetched, ZCrypt won't check for updates", "y")
+    else :
+        latestMajorVersion, latestMinorVersion = manifestData['versionCode'].split(".")
+        if int(latestMinorVersion) > int(ZCryptMinorVersion) :
+            printy("Info : A new update is available for ZCrypt !", "c")
+            printy("You are currently running " + ZCryptVersionName + " but you can update it to " + manifestData['versionName'], "c")
+            answer = inputy("Do you want to install this update ? (Y/n) ", "c")
+            if answer.lower() != "n" :
+                import urllib.request as urlr
+                try :
+                    downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py")
+                    printy("ZCrypt will now quit. Please run the new version file")
+                    settings['deleteOld'] = os.path.basename(__file__)
+                    writeSettings(settings)
+                except :
+                    printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
+                else :
+                    input("Press any key to continue...")
+                    exit()
+        elif int(latestMajorVersion) > int(ZCryptMajorVersion) :
+            printy("A new major update has been released for ZCrypt !", "c")
+            printy("Warning : changing between major versions means API change. If you install this new version, you will NOT be able to decrypt messages encrypted with another major version number", "y")
+            printy("Info : You are currently running " + ZCryptVersionName + " and latest version (which can be downloaded) is " + manifestData['versionName'], "n")
+            answer = inputy("Do you want to install " + manifestData['versionName'] + " ? (Y/n) ", "c")
+            if answer.lower() != "n" :
+                import urllib.request as urlr
+                try : 
+                    downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py")
+                    printy("ZCrypt will now quit. Please run the new version file")
+                    settings['deleteOld'] = os.path.basename(__file__)
+                    writeSettings(settings)
+                except :
+                    printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
+                else :
+                    input("Press any key to continue...")
+                    exit()
+
+        else : printy("Info : ZCrypt is up to date", "c")
+
+# SETTINGS
+def writeSettings(settingsToWrite: dict = defaultSettings) :
+    global settings
+    with open("ZCrypt-settings", "w") as settingsFile :
+        settingsFile.write("This file has been automatically created by ZCrypt. Do NOT modify it unless you know what you are doing \n")
+        for element in settingsToWrite.keys() :
+            settingsFile.write(element + ":" + str(settingsToWrite[element]) + ";")
+            settings = settingsToWrite
+
+def loadSettings() :
+    global settings
+    with open("ZCrypt-settings", "r") as settingsFile :
+        settingsList = settingsFile.readlines()[1].split(";")[:-1]
+        assert len(settingsList) == 7 or 8
+        settings = dict()
+        for setting in settingsList :
+            elements = setting.split(":")
+            assert elements[0] != "" and elements[1] != ""
+            settings[elements[0]] = elements[1]
 
 def runSettings() :
     global settings
@@ -734,7 +800,8 @@ def runSettings() :
     printy("    - 3: warn before overwrite", "c")
     printy("    - 4: decrypted content output mode", "c")
     printy("    - 5: encryption and decryption algorithm", "c")
-    printy("    - 6: RSA keys size (number of bits)\n", "c")
+    printy("    - 6: RSA keys size (number of bits)", "c")
+    printy("    - 7: Fetch ZCrypt updates\n", "c")
 
     printy("If you want to see the current value of an option, type \"see\" followed by the number linked to the option", "c")
     printy("If you want to change this value, type \"set\" followed by the number linked to the option", "c")
@@ -767,6 +834,15 @@ def runSettings() :
             elif settingsCmd[4] == '6' :
                 printy("RSA uses public and private keys to encrypt/decrypt content. These keys are made of very high numbers (more than 20 digits)", "c")
                 printy("Currently RSA keys have a length of " + str(settings['rsaKeyBytes']) + " bits", "c")
+
+            elif settingsCmd[4] == "7" :
+                printy("ZCrypt can automatically fetch updates for you", "c")
+                if settings["checkForUpdates"] == "atStart" :
+                    printy("Currently ZCrypt checks for updates every time you start ZCrypt", "c")
+                elif settings["checkForUpdates"] == "atOperation" :
+                    printy("Currenly ZCrypt check for updates every time an operation is performed (decryption or encryption)", "c")
+                else :
+                    printy("ZCrypt will never check if updates are available", "c")
             
             else :
                 printy("Error ! The option you tried to view does not exists or does have a number assigned to it", "m")
@@ -779,6 +855,7 @@ def runSettings() :
                     printy("Warning : the name you entered is not valid. " + settings['fileOutput'] + " will be kept", "y")
                 else : 
                     settings['fileOutput'] = fileOutput
+                    writeSettings(settings)
                     printy("Sucess : the name of the output file has been successfully changed to", "n", end = ' ')
                     printy(fileOutput, 'n')
 
@@ -788,6 +865,7 @@ def runSettings() :
                 try :
                     if int(choice) <= 4 and int(choice) > 0 :
                         settings['dateFormat'] = choice
+                        writeSettings(settings)
                         printy('Success : set date format to ' + dateFormatDict[choice], 'n')
                     else :
                         printy("Error : " + choice + " is not an offered choice", 'm')
@@ -803,8 +881,9 @@ def runSettings() :
                 printy("Please be careful when disabling this warning. You could lose important data and ZCrypt assumes no responsability in this. Do it at your own risk", 'm')
                 testdisable = input("Input : ")
                 if testdisable == "disable" :
-                    printy("Caution : Warning before overwrite is now disabled", 'y')
                     settings['warnBeforeOW'] = False
+                    writeSettings(settings)
+                    printy("Caution : Warning before overwrite is now disabled", 'y')
                 else :
                     printy("Nothing has been changed", 'n')
                     printy("Returning...", 'n')
@@ -819,6 +898,7 @@ def runSettings() :
                 try :
                     if 0 <= int(choice) <= 2 : 
                         settings['outModeDecrypt'] = int(choice)
+                        writeSettings(settings)
                         printy("Success : set output mode to " + choice, 'n')
                     else : printy("Error : " + choice + " is not an offered choice", "m")
                 except ValueError :
@@ -831,10 +911,19 @@ def runSettings() :
                 printy("If you choose RSA, your messages will always be encrypted using RSA", "c")
                 printy("Lastly, as the name suggests, if you choose zcrypt, ZCrypt will always encrypt your messages using ZCrypt algorithm", "c")
                 printy("Note : ZCrypt algorithm is much less secure but offers many more features (such as addind a sender, receiver and date to your message. On the other hand RSA is much more secure (used by thousands of companies) but can only encrypt messages", "y")
-                choice = input("Input : ")
-                if choice.lower() == "ask" : settings['encryptionMode'] = "ask"; printy("Successfully set encryption mode to " + choice, 'n')
-                elif choice.lower() == "rsa" : settings['encryptionMode'] = "RSA"; printy("Successfully set encryption mode to " + choice, 'n')
-                elif choice.lower() == "zcrypt" : settings['encryptionMode'] = "zcrypt"; printy("Successfully set encryption mode to " + choice, 'n')
+                choice = input("Input : ").lower()
+                if choice == "ask" : 
+                    settings['encryptionMode'] = "ask"
+                    writeSettings(settings)
+                    printy("Successfully set encryption mode to " + choice, 'n')
+                elif choice == "rsa" : 
+                    settings['encryptionMode'] = "RSA"
+                    writeSettings(settings)
+                    printy("Successfully set encryption mode to " + choice, 'n')
+                elif choice == "zcrypt" : 
+                    settings['encryptionMode'] = "zcrypt"
+                    writeSettings(settings)
+                    printy("Successfully set encryption mode to " + choice, 'n')
                 else : 
                     printy("The value you entered is not valid. Please note that ZCrypt has been saved as default value", "m")
                     settings['encryptionMode'] = "zcrypt"
@@ -851,13 +940,35 @@ def runSettings() :
                     if choice > 4096 or choice < 256 :
                         printy("Warning : you entered a non-recomended value. Expect low security/crashes/slowness when generating keys", 'y')
                         settings['rsaKeyBytes'] = choice
+                        writeSettings(settings)
+                        printy("Success : set RSA keys length to " + str(choice) + " bytes", 'n')
                     else :
                         settings['rsaKeyBytes'] = choice
+                        writeSettings(settings)
                         printy("Success : set RSA keys length to " + str(choice) + " bytes", 'n')
                 except ValueError :
                     printy("Error : please enter an integer", "m")
                 except AssertionError :
                     printy("Error : please enter a power of 2", "m")
+
+            elif settingsCmd[4] == '7' :
+                printy("ZCrypt can automatically check for new updates and download them if necessary", "c")
+                printy("By default, ZCrypt does that every time you start however you can change this behavior", "c")
+                printy("3 values are available for this setting", "c")
+                printy("If you enter start which is the default value for this setting that's to available updates will be fetched at start", "c")
+                printy("If you enter operation, ZCrypt will check for available updates every time you encrypt or decrypt something", "c")
+                printy("If you enter never ZCrypt will NEVER check for updates", "c")
+                choice = input("Input : ").lower()
+                if choice == "start" : 
+                    settings['checkForUpdates'] = "atStart"
+                    writeSettings(settings)
+                elif choice == "operation" : 
+                    settings['checkForUpdates'] = "atOperation"
+                    writeSettings(settings)
+                elif choice == "never" : 
+                    settings['checkForUpdates'] = "never"
+                    writeSettings(settings)
+                else : printy("Error : this is not an offered choice", "m")
 
             else :
                 printy("Error : the option you tried to view does not exists or does have a number assigned to it", "m")
@@ -871,6 +982,8 @@ def runSettings() :
     
 
 if __name__ == '__main__' :
+    # START-UP
+    #Module check routine
     print(ZCryptVersionName)
     print("Info : ZCrypt is starting up...")
     try :
@@ -882,7 +995,6 @@ if __name__ == '__main__' :
         answer = input("Would like to proceed to automatic installation ? (Y/n) ")
         if answer.lower() != "n" :
             print("Info : installing missing dependencies...")
-            import os
             command = ("python" if os.name == "nt" else "python3") + " -m pip install -r PackageRequirements.txt"
             if not os.system(command) :
                 print("Success : missing modules were successfully installed !")
@@ -894,55 +1006,44 @@ if __name__ == '__main__' :
                 exit()
         else : exit()
 
+    #Loading settings from file routine
     try :
-        req = requests.get(manifestAddress)
-        manifestData = req.json()['ZCrypt']
-    except :
-        printy("Warning : there was an error while fetching ZCrypt online manifest. Maybe your device is offline", "y")
-        printy("Warning : since latest information about ZCrypt could not be fetched, ZCrypt won't check for updates", "y")
-    else :
-        latestMajorVersion, latestMinorVersion = manifestData['versionCode'].split(".")
-        if int(latestMinorVersion) > int(ZCryptMinorVersion) :
-            printy("Info : A new update is available for ZCrypt !", "c")
-            printy("You are currently running " + ZCryptVersionName + " but you can update it to " + manifestData['versionName'], "c")
-            answer = inputy("Do you want to install this update ? (Y/n) ", "c")
-            if answer.lower() != "n" :
-                import urllib.request as urlr
-                try :
-                    downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py", ", ZCrypt will now quit. Please run the new version file")
-                except :
-                    printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
-                else :
-                    input("Press any key to continue...")
-                    exit()
-        elif int(latestMajorVersion) > int(ZCryptMajorVersion) :
-            printy("A new major update has been released for ZCrypt !", "c")
-            printy("Warning : changing between major versions means API change. If you install this new version, you will NOT be able to decrypt messages encrypted with another major version number", "y")
-            printy("Info : You are currently running " + ZCryptVersionName + " and latest version (which can be downloaded) is " + manifestData['versionName'], "n")
-            answer = inputy("Do you want to install " + manifestData['versionName'] + " ? (Y/n) ", "c")
-            if answer.lower() != "n" :
-                import urllib.request as urlr
-                try : 
-                    downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py", ", ZCrypt will now quit. Please run the new version file")
-                except :
-                    printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
-                else :
-                    input("Press any key to continue...")
-                    exit()
+        loadSettings()
+    except (IndexError, KeyError, AssertionError) :
+        printy("Error : ZCrypt-settings file seems to be corrupt", "m")
+        answer = inputy("Do you want to restore it to defaults (Y/n) ? ")
+        if answer.lower() != "n" :
+            try :
+                os.remove("ZCrypt-settings")
+                writeSettings()
+                loadSettings()
+            except :
+                printy("Error : ZCrypt was unable to automatically recover the settings file, please re-install ZCrypt if this problem keeps happening", "m")
+                exit()
+        else :
+            exit()
 
-        else : printy("Info : ZCrypt is up to date", "c")       
+    except FileNotFoundError :
+        writeSettings()
+        loadSettings()        
 
+    #Check for updates if necessary
+    if settings['checkForUpdates'] == "atStart" : update()
+    else : printy("Warning : not checking for updates since it has been disabled in settings", "y")
 
-    #Welcome screen
+    #check if older python file is installed
+
+    
+    # WELCOME SCREEN
     printy("#######################", "c>")
     printy("# Welcome to ZCrypt ! #", "c>")
     printy("#######################", "c>")
     printy("Here are the commands you can use : encrypt, decrypt and you can also see the user manual by typing \"manual\"", "n>")
     printy("If this is your first time using the program, please consider using the \"instructions\" command", "n>")
     printy("If you want to access the settings, type \"settings\"", "n>")
-    printy("You can also exit the program by typing \"quit\"", "n>")                                                
+    printy("You can also exit the program by typing \"exit\"", "n>")                                                
         
-    #main loop
+    # MAIN LOOP
     while True :
         print("")
         printy("Please input a command ", "c")
@@ -981,16 +1082,15 @@ if __name__ == '__main__' :
                 #Explaining the error itself
                 all_lines = manual_file.readlines()
                 for line in range(len(all_lines)) :
-                    if Error_Code in all_lines[line] : print(all_lines[line])
+                    if Error_Code in all_lines[line] : 
+                        print(all_lines[line])
+                        break
                 
             else :
                 printy("Your file has been decrypted without any errors.", "c")
 
         elif "manual" in command :
-            manual_file = open("UserManual.txt", "r")
-            manual_text = manual_file.readlines()
-            for line in range(len(manual_text)) :
-                print(manual_text[line])
+            printy("Info : See ZCrypt manual at https://github.com/cl-ement05/ZCrypt/blob/master/UserManual.md", "c")
 
         elif "instructions" in command :
             print("Dear User, welcome to ZCrypt !")

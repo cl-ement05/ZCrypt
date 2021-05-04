@@ -161,7 +161,7 @@ def ZretrieveKey() :
 def RretrieveKey() :
     printy("In order to decrypt a message that was encrypted with RSA, a private key is needed", "c")
     printy("If you saved it when encrypting your message, the private key specs will be automatically retrieved", "c")
-    printy("Otherwise you will need to remember and enter each value", "c")
+    printy("Otherwise you will need to provide each value", "c")
 
     print("Do you have your private key saved in a file ? (Y/n) ", end = "")
     if input("").lower() == "n" :
@@ -219,7 +219,7 @@ def ZcreateKey() :
 def RcreateKey() :
     global privKey, pubKey, keyBin
     printy("Info : generating RSA keys", 'c')
-    (pubKey, privKey) = rsa.newkeys(settings['rsaKeyBytes'])
+    (pubKey, privKey) = rsa.newkeys(int(settings['rsaKeyBytes']))
     printy("Warning : here are your private key specs. DO NOT SHARE THEM UNLESS YOU KNOW WHAT YOU ARE DOING !", 'y')
     print("PrivateKey N : ", privKey.n)
     print("PrivateKey e : ", privKey.e)
@@ -227,11 +227,11 @@ def RcreateKey() :
     print("PrivateKey p : ", privKey.p)
     print("PrivateKey q : ", privKey.q)
     printy("\nWarning : you will need to provide these numbers in order to decrypt your message", "y")
-    printy("Since they are very long, so hard to remeber, ZCrypt provides you an option to save them", "c")
+    printy("Since it is hard to remeber them, ZCrypt offers you an option to save them", "c")
     printy("Do you want to save your private key to a text file ? (Y/n) ", "c", end = ' ')
     answer = input("")
     if answer != "n" :
-        fileName = askFilename("keys.txt")
+        fileName = askFilename("keys")
         printy("Info : saving private key...", "c")
         file = open(fileName, "w")
         file.write(str(privKey.n) + "\n")
@@ -402,7 +402,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
             printy("Warning : if you continue the encryption process, the existing file will be overwritten", 'y')
             printy("Note : this operation cannot be undone", 'c')
             printy("Note : we highly recommend you to backup this file if personnal infos are stored on it", 'c')
-            printy(fileOutput + " will be overwritten !! Proceed anyway ? (y/n)", 'y')
+            printy(fileOutput + " will be overwritten !!", 'y')
             printy("Are you sure you want to continue ? (y/N)", 'y', end = '')
             answer = input(" ").lower()
             if answer == "y" :
@@ -558,7 +558,7 @@ def prepareDecrypted(mode: str) :
     if (mode == "z") :
         printy("Info : entering ZCrypt decryption mode...", "c")
         if ZfileCheck() :
-            printy("Your file was successfully checked and no file integrity errors were found. Continuing...", "n")
+            printy("Success : your file was checked and no file integrity errors were found. Continuing...", "n")
             ZretrieveKey()
             finalDecrypted = decryptMessage("z")
             senderDecr = decryptSender("z")
@@ -571,7 +571,7 @@ def prepareDecrypted(mode: str) :
     else : 
         printy("Info : entering RSA decryption mode...", "c")
         if RfileCheck() :
-            printy("Your file was successfully checked and no file integrity errors were found. Continuing...", "n")
+            printy("Sucess : your file was checked and no file integrity errors were found. Continuing...", "n")
             privKey = RretrieveKey()
             if privKey != None :
                 try :
@@ -582,6 +582,9 @@ def prepareDecrypted(mode: str) :
                 except rsa.DecryptionError :
                     printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
                     return
+            else :
+                print("Aborting...")
+                return
         else :
             printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
             print("Aborting...")
@@ -607,7 +610,7 @@ def prepareDecrypted(mode: str) :
 
         }
 
-    printy("Success : file decrypting finished", "n")
+    printy("Success : file decrypted", "n")
     print("")
 
     finalEntireDate, finalEntireTime = '', ''
@@ -683,7 +686,7 @@ def printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, date, time) 
 
 #func used to save decrypted output to a human-readable file
 def saveDecryptedContent(dico: dict) :  
-    fileName = askFilename("Decrypted.txt")
+    fileName = askFilename("Decrypted")
     
     fileToWrite = open(fileName, 'w')
     for element in dico.keys() :
@@ -704,7 +707,7 @@ def askFilename(defaultName: str, message: str = "Please enter the name of file 
     #because e.g. filname is "abc" then abc[-4:] returns "abc" and ".txt" is 4 char long so in order to have a valid name both len() > 4 and ends with ".txt" is required
     if not (len(fileNameInput) > len(fileExp) and fileNameInput[-len(fileExp):] == fileExp) :
         printy("Warning : the name you entered is not valid. " + defaultName + " will be used instead", "y")
-        return defaultName
+        return defaultName + fileExp
     else : return fileNameInput
 
 def findDayName(date) :
@@ -849,7 +852,7 @@ def runSettings() :
             if settingsCmd[4] == '1' :
                 fileOutput = input("Please enter the name of file you want to be saved as. Don't forget to ad (.txt) at the end ! : ")
                 if not (len(fileOutput) > 4 and fileOutput[-4:] == ".txt") :
-                    printy("Warning : the name you entered is not valid. " + settings['fileOutput'] + " will be kept", "y")
+                    printy("Error : the name you entered is not valid. Nothing has been changed", "m")
                 else : 
                     settings['fileOutput'] = fileOutput
                     writeSettings(settings)
@@ -880,7 +883,7 @@ def runSettings() :
                 if testdisable == "disable" :
                     settings['warnBeforeOW'] = False
                     writeSettings(settings)
-                    printy("Caution : Warning before overwrite is now disabled", 'y')
+                    printy("Success : Warning before overwrite is now disabled", 'y')
                 else :
                     printy("Nothing has been changed", 'n')
                     printy("Returning...", 'n')
@@ -959,13 +962,16 @@ def runSettings() :
                 if choice == "start" : 
                     settings['checkForUpdates'] = "atStart"
                     writeSettings(settings)
+                    printy("Success : ZCrypt will check for updates at boot", "n")
                 elif choice == "operation" : 
                     settings['checkForUpdates'] = "atOperation"
                     writeSettings(settings)
+                    printy("Success : ZCrypt will check for updates each time an operation is performed", "n")
                 elif choice == "never" : 
                     settings['checkForUpdates'] = "never"
                     writeSettings(settings)
                 else : printy("Error : this is not an offered choice", "m")
+                printy("Success : ZCrypt will never check for updates", "n")
 
             else :
                 printy("Error : the option you tried to view does not exists or does have a number assigned to it", "m")

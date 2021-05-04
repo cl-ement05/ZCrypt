@@ -7,7 +7,6 @@ import os
 
 Error_Code = str()
 
-#Default settings
 defaultSettings = {
     "fileOutput" : "Mail.txt",
     "dateFormat" : '1',
@@ -21,6 +20,15 @@ manifestAddress = "https://raw.githubusercontent.com/cl-ement05/ZCrypt/master/ma
 ZCryptMinorVersion = "1"
 ZCryptMajorVersion = "3"
 ZCryptVersionName = "ZCrypt V3.1"
+
+errorsDict = {
+    "E101" : "OS-level error : your file does not exist, is corrupted or cannot be read (check permissions)",
+    "E201" : "File not matching ZCrypt requirements : the file's length does not match the length ZCrypt expected",
+    "E202" : "File not matching ZCrypt requirements : one or more lines couldn't be read (convert to string/bytes impossible due to unknow character type)",
+    "E211" : "File not matching ZCrypt requirements : the first line (which contains timestamp) couldn't be read OR is less or more than 43 characters long",
+    "E214" : "File not matching ZCrypt requirements : the fourth line does not match zcrypt format requirements",
+    "E215" : "File not matching ZCrypt requirements : the fith line which contains the whole message couldn't be converted to an integer"
+}
 
 lastKey = randint(35, 100)                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 
@@ -69,10 +77,10 @@ def ZfileCheck() -> bool :
             try :
                 int(line1[:42])
             except ValueError :
-                Error_Code = "E301"
+                Error_Code = "E211"
                 return False
         else :
-            Error_Code = "E301"
+            Error_Code = "E211"
             return False
 
         if "b" in line4 :
@@ -80,16 +88,16 @@ def ZfileCheck() -> bool :
                 int(line4[:8], 2)
                 int(line4[9:15])
             except ValueError :
-                Error_Code = "E304"
+                Error_Code = "E214"
                 return False
         else :
-            Error_Code = "E304"
+            Error_Code = "E214"
             return False
         
         try :
             int(line5)
         except ValueError :
-            Error_Code = "E305"
+            Error_Code = "E215"
             return False
     
     return True
@@ -708,6 +716,7 @@ def findDayName(date) :
     dayNumber = datetime.strptime(date, '%d %m %Y').weekday()
     return (day_name[dayNumber])
 
+# UPDATES AND DOWNLOADS
 def downloadFile(fileUrl: str, fileName: str, fileExtension: str) :
     printy("Info : Downloading " + fileName, "c")
     downloadedFile = urlr.urlopen(fileUrl).read()
@@ -725,23 +734,7 @@ def update() :
         printy("Warning : since latest information about ZCrypt could not be fetched, ZCrypt won't check for updates", "y")
     else :
         latestMajorVersion, latestMinorVersion = manifestData['versionCode'].split(".")
-        if int(latestMinorVersion) > int(ZCryptMinorVersion) :
-            printy("Info : A new update is available for ZCrypt !", "c")
-            printy("You are currently running " + ZCryptVersionName + " but you can update it to " + manifestData['versionName'], "c")
-            answer = inputy("Do you want to install this update ? (Y/n) ", "c")
-            if answer.lower() != "n" :
-                import urllib.request as urlr
-                try :
-                    downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py")
-                    printy("ZCrypt will now quit. Please run the new version file")
-                    settings['deleteOld'] = os.path.basename(__file__)
-                    writeSettings(settings)
-                except :
-                    printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
-                else :
-                    input("Press any key to continue...")
-                    exit()
-        elif int(latestMajorVersion) > int(ZCryptMajorVersion) :
+        if int(latestMajorVersion) > int(ZCryptMajorVersion) :
             printy("A new major update has been released for ZCrypt !", "c")
             printy("Warning : changing between major versions means API change. If you install this new version, you will NOT be able to decrypt messages encrypted with another major version number", "y")
             printy("Info : You are currently running " + ZCryptVersionName + " and latest version (which can be downloaded) is " + manifestData['versionName'], "n")
@@ -755,11 +748,29 @@ def update() :
                     writeSettings(settings)
                 except :
                     printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
+                    return False
                 else :
-                    input("Press any key to continue...")
-                    exit()
+                    return True
+
+        elif int(latestMinorVersion) > int(ZCryptMinorVersion) :
+            printy("Info : A new update is available for ZCrypt !", "c")
+            printy("You are currently running " + ZCryptVersionName + " but you can update it to " + manifestData['versionName'], "c")
+            answer = inputy("Do you want to install this update ? (Y/n) ", "c")
+            if answer.lower() != "n" :
+                import urllib.request as urlr
+                try :
+                    downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py")
+                    printy("ZCrypt will now quit. Please run the new version file")
+                    settings['deleteOld'] = os.path.basename(__file__)
+                    writeSettings(settings)
+                except :
+                    printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
+                    return False
+                else :
+                    return True
 
         else : printy("Info : ZCrypt is up to date", "c")
+        return False
 
 # SETTINGS
 def writeSettings(settingsToWrite: dict = defaultSettings) :
@@ -1028,7 +1039,10 @@ if __name__ == '__main__' :
         loadSettings()        
 
     #Check for updates if necessary
-    if settings['checkForUpdates'] == "atStart" : update()
+    if settings['checkForUpdates'] == "atStart" : 
+        if update() :
+            input("Press any key to continue...")
+            exit()
     else : printy("Warning : not checking for updates since it has been disabled in settings", "y")
 
     #check if older python file is installed
@@ -1070,21 +1084,14 @@ if __name__ == '__main__' :
         elif "settings" in command :
             runSettings()
 
-        elif "showErrors" in command : 
+        elif "showError" in command : 
             if Error_Code != "" :
                 print("We are sorry to hear that your file has a problem")
                 print("Here is your error code :", Error_Code)
                 print("This is an extract from the UserManual where your error code is discussed")
 
                 #Showing info about the error code starting with ...
-                manual_file = open("UserManual.txt", "r")
-                
-                #Explaining the error itself
-                all_lines = manual_file.readlines()
-                for line in range(len(all_lines)) :
-                    if Error_Code in all_lines[line] : 
-                        print(all_lines[line])
-                        break
+                print(errorsDict[Error_Code])
                 
             else :
                 printy("Your file has been decrypted without any errors.", "c")
@@ -1107,7 +1114,7 @@ if __name__ == '__main__' :
             print("")
 
             print("If the program says that your file has a problem and that it can't be decrypted, don't panic !")
-            print("You can use the \"showErrors\" command !")
+            print("You can use the \"showError\" command !")
             print("")
 
             print("Enjoy !")

@@ -17,7 +17,7 @@ Feel free to commit improvements and enjoy !
 
 ## License 
 ZCrypt is under the [GNU GPLv3 license](LICENSE.md)
-# Special thanks
-Edraobdu for his amazing [printy module](https://github.com/edraobdu/printy) 
+## Special thanks
+Edraobdu for the [printy module](https://github.com/edraobdu/printy) 
 
 Sybren for the [Python-RSA library](https://github.com/sybrenstuvel/python-rsa)

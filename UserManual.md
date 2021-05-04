@@ -33,7 +33,7 @@ Let's take an example with the letter "a" : a ==> 97 ==> 97 + 25(key) ==> 122 ==
 
 # Command usage
 You can type different commands to use ZCrypt
-Here are they : `encrypt`, `decrypt`, `settings`, `instructions`, `showErrors` and `manual`
+Here are they : `encrypt`, `decrypt`, `settings`, `instructions`, `showError`, `manual` and finally `exit`
 
 ## Encrypt
 When you want to `encrypt` a message, type encrypt and press enter.
@@ -57,9 +57,6 @@ When you want to see the status or value of a setting, type "see X" where X is t
 If you want to change this value, type "set X" where is X is one more time the number assigned to the setting you want to edit.
 If you want to go back to the software main page, type exit and will be able to encrypt or decrypt messages again.
 Crypting or decrypting messages is not possible when you are in the settings since the commands (enrypt or decrypt) are not registered in the settings.
-
-The instructions command explains shortly how the program works and how to use it.
-Please consider reading it if this is your first time using ZCrypt.
 
 ## Error Codes
 Sometimes ZCrypt is not able to decrypt your message.

@@ -18,9 +18,9 @@ defaultSettings = {
     "checkForUpdates" : "atStart"
 }
 manifestAddress = "https://raw.githubusercontent.com/cl-ement05/ZCrypt/master/manifest.json"
-ZCryptMinorVersion = "1"
-ZCryptMajorVersion = "3"
-ZCryptVersionName = "ZCrypt V3.1"
+ZCryptMinorVersion = "0"
+ZCryptMajorVersion = "4"
+ZCryptVersionName = "ZCrypt V4.0"
 
 errorsDict = {
     "E101" : "OS-level error : your file does not exist, is corrupted or cannot be read (check permissions)",
@@ -717,12 +717,12 @@ def findDayName(date) :
 
 # UPDATES AND DOWNLOADS
 def downloadFile(fileUrl: str, fileName: str, fileExtension: str) :
+    fileName = askFilename(fileName, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)
     printy("Info : Downloading " + fileName, "c")
     downloadedFile = urlr.urlopen(fileUrl).read()
-    fileName = askFilename(fileName, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)
     with open(fileName, "wb") as fileToWrite :
         fileToWrite.write(downloadedFile)
-    printy("Success : " + fileName + " was successfully downloaded", "c")
+    printy("Success : " + fileName + " was downloaded", "c")
 
 def checkForUpdates() :
     try :
@@ -1029,6 +1029,21 @@ if __name__ == '__main__' :
         writeSettings()
         loadSettings()
 
+    #check if older python file is present
+    try :
+        if settings['deleteOld'] != os.path.basename(__file__) :    #to avoid deleting itself
+            os.remove(settings['deleteOld'])
+        else :
+            printy("Error : you are not launching the right ZCrypt file", "m")
+            printy("Please run the Python file called " + settings['deleteOld'], "m")
+            printy("Info : since this version of ZCrypt is not the newest version, ZCrypt will now exit...", "c")
+            sys.exit()
+    except KeyError :
+        pass
+    else :
+        settings.pop('deleteOld')
+        writeSettings(settings)
+    
     #Check for updates if necessary
     if settings['checkForUpdates'] == "atStart" or settings['checkForUpdates'] == "atOperation":
         import urllib.request as urlr
@@ -1037,21 +1052,6 @@ if __name__ == '__main__' :
             input("Press any enter to continue...")
             sys.exit()
     else : printy("Warning : not checking for updates since it has been disabled in settings", "y")
-
-    #check if older python file is present
-    try :
-        if settings['deleteOld'] != os.path.basename(__file__) :    #to avoid deleting itself
-            os.remove(settings['deleteOld'])
-        else :
-            printy("Error : you are not launching the right ZCrypt file", "m")
-            printy("Please run the Python file called ZCrypt VX.Y", "m")
-            printy("Info : since this version of ZCrypt is not the newest version, ZCrypt will now exit...", "c")
-            sys.exit()
-    except KeyError :
-        pass
-    else :
-        settings.pop('deleteOld')
-        writeSettings(settings)
 
     # WELCOME SCREEN
     printy("#######################", "c>")

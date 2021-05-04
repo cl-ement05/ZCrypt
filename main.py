@@ -761,6 +761,7 @@ def update(manifestData) :
             return False
         else :
             return True
+    else : return False
 
 # SETTINGS
 def writeSettings(settingsToWrite: dict = defaultSettings) :
@@ -1033,7 +1034,7 @@ if __name__ == '__main__' :
         import urllib.request as urlr
         result = checkForUpdates()
         if result[0] and update(result[1]) :
-            input("Press any key to continue...")
+            input("Press any enter to continue...")
             exit()
     else : printy("Warning : not checking for updates since it has been disabled in settings", "y")
 
@@ -1046,7 +1047,11 @@ if __name__ == '__main__' :
             printy("Please run the Python file called ZCrypt VX.Y", "m")
             printy("Info : since this version of ZCrypt is not the newest version, ZCrypt will now exit...", "c")
             exit()
-    except KeyError : pass
+    except KeyError : 
+        pass
+    else :
+        settings.pop('deleteOld')
+        writeSettings(settings)
     
     # WELCOME SCREEN
     printy("#######################", "c>")

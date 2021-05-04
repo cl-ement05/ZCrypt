@@ -17,7 +17,7 @@ defaultSettings = {
     "rsaKeyBytes" : 1024,
     "checkForUpdates" : "atStart"
 }
-manifestAddress = "https://raw.githubusercontent.com/cl-ement05/ZCrypt/master/manifest.json"
+manifestAddress = "https://github.com/cl-ement05/ZCrypt/releases/latest/download/manifest.json"
 ZCryptMinorVersion = "0"
 ZCryptMajorVersion = "4"
 ZCryptVersionName = "ZCrypt V4.0"

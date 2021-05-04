@@ -754,7 +754,7 @@ def update(manifestData) :
         try :
             savedFile = downloadFile(manifestData['download'], "newZCrypt", ".py")
             printy("ZCrypt will now quit. Please run the new version file")
-            settings['deleteOld'] = (os.path.basename(__file__), savedFile)
+            settings['deleteOld'] = os.path.basename(__file__) + "|" + savedFile
             writeSettings(settings)
         except :
             printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
@@ -1032,11 +1032,12 @@ if __name__ == '__main__' :
 
     #check if older python file is present
     try :
-        if settings['deleteOld'][0] != os.path.basename(__file__) :    #to avoid deleting itself
-            os.remove(settings['deleteOld'][0])
+        oldFileInfo = settings['deleteOld'].split("|")
+        if oldFileInfo[0] != os.path.basename(__file__) :    #to avoid deleting itself
+            os.remove(oldFileInfo[0])
         else :
             printy("Error : you are not launching the right ZCrypt file", "m")
-            printy("Please run the Python file called " + settings['deleteOld'][1], "m")
+            printy("Please run the Python file called " + oldFileInfo[1], "m")
             printy("Info : since this version of ZCrypt is not the newest version, ZCrypt will now exit...", "c")
             sys.exit()
     except KeyError :

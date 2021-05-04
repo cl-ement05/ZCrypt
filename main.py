@@ -1046,7 +1046,15 @@ if __name__ == '__main__' :
     else : printy("Warning : not checking for updates since it has been disabled in settings", "y")
 
     #check if older python file is installed
-
+    try :
+        if settings['deleteOld'] != os.path.basename(__file__) :    #to avoid deleting itself
+            os.remove(settings['deleteOld'])
+        else :
+            printy("Error : you are not launching the right ZCrypt file", "m")
+            printy("Please run the Python file called ZCrypt VX.Y", "m")
+            printy("Info : since this version of ZCrypt is not the newest version, ZCrypt will now exit...", "c")
+            exit()
+    except KeyError : pass
     
     # WELCOME SCREEN
     printy("#######################", "c>")

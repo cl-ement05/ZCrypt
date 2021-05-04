@@ -415,7 +415,12 @@ def prepareEncryptedOutput(cryptingMode: str) :
         else :
             writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
             printy("Info : a file has been overwritten", "y")
-
+    
+    if settings['checkForUpdates'] == "atOperation" :
+        result = checkForUpdates()
+        if result[0] and update(result[1]) :
+            input("Press any enter to continue...")
+            sys.exit()
 
 #Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
 def writeFile(mode: str, *args: str or bytes) :
@@ -670,6 +675,11 @@ def prepareDecrypted(mode: str) :
             })
     else : printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
 
+    if settings['checkForUpdates'] == "atOperation" :
+        result = checkForUpdates()
+        if result[0] and update(result[1]) :
+            input("Press any enter to continue...")
+            sys.exit()
 
 def printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, date, time) :
     printy("This message was created " + date + ' at ' + time, "c>")
@@ -970,8 +980,8 @@ def runSettings() :
                 elif choice == "never" :
                     settings['checkForUpdates'] = "never"
                     writeSettings(settings)
+                    printy("Success : ZCrypt will never check for updates", "n")
                 else : printy("Error : this is not an offered choice", "m")
-                printy("Success : ZCrypt will never check for updates", "n")
 
             else :
                 printy("Error : the option you tried to view does not exists or does have a number assigned to it", "m")

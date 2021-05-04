@@ -402,23 +402,18 @@ def prepareEncryptedOutput(cryptingMode: str) :
             printy("Warning : if you continue the encryption process, the existing file will be overwritten", 'y')
             printy("Note : this operation cannot be undone", 'c')
             printy("Note : we highly recommend you to backup this file if personnal infos are stored on it", 'c')
-            printy("Are you sure you want to continue ? (y/n)", 'y', end = '')
-            firstanswer = input(" ")
-            if firstanswer == "y" :
-                printy(fileOutput, 'y', end = ' ')
-                printy("will be overwritten !! Proceed anyway ? (y/n)", 'y', end ='')
-                confirmation = input(" ")
-                if confirmation == "y" :
-                    writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)   #after user confirmation that file can be overwritten -> writeFile
-                else :
-                    printy("Info : encryption aborted", 'c') 
+            printy(fileOutput + " will be overwritten !! Proceed anyway ? (y/n)", 'y')
+            printy("Are you sure you want to continue ? (y/N)", 'y', end = '')
+            answer = input(" ").lower()
+            if answer == "y" :
+                writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)   #after user confirmation that file can be overwritten -> writeFile
             else :
-                printy("Info : encryption aborted", 'c')
+                printy("Info : encryption aborted", 'c') 
         
         #if the warning has been disabled
         else :
             writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
-            printy("Warning : a file has been overwritten", "y")
+            printy("Info : a file has been overwritten", "y")
 
 
 #Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
@@ -1038,7 +1033,7 @@ if __name__ == '__main__' :
             exit()
     else : printy("Warning : not checking for updates since it has been disabled in settings", "y")
 
-    #check if older python file is installed
+    #check if older python file is present
     try :
         if settings['deleteOld'] != os.path.basename(__file__) :    #to avoid deleting itself
             os.remove(settings['deleteOld'])

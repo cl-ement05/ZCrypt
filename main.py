@@ -732,7 +732,7 @@ def checkForUpdates() :
     except :
         printy("Warning : there was an error while fetching ZCrypt online manifest. Maybe your device is offline", "y")
         printy("Warning : since latest information about ZCrypt could not be fetched, ZCrypt won't check for updates", "y")
-        return False
+        return False, None
     else :
         latestMajorVersion, latestMinorVersion = manifestData['versionCode'].split(".")
         if int(latestMajorVersion) > int(ZCryptMajorVersion) :
@@ -746,7 +746,7 @@ def checkForUpdates() :
             return True, manifestData
         else : 
             printy("Info : ZCrypt is up to date", "c")
-            return False
+            return False, None
 
 def update(manifestData) :
     answer = inputy("Do you want to install " + manifestData['versionName'] + " ? (Y/n) ", "c")
@@ -841,7 +841,7 @@ def runSettings() :
                 if settings["checkForUpdates"] == "atStart" :
                     printy("Currently ZCrypt checks for updates every time you start ZCrypt", "c")
                 elif settings["checkForUpdates"] == "atOperation" :
-                    printy("Currenly ZCrypt check for updates every time an operation is performed (decryption or encryption)", "c")
+                    printy("Currenly ZCrypt check for updates every time an operation is performed (decryption or encryption) AND at ZCrypt start", "c")
                 else :
                     printy("ZCrypt will never check if updates are available", "c")
             
@@ -957,7 +957,7 @@ def runSettings() :
                 printy("By default, ZCrypt does that every time you start however you can change this behavior", "c")
                 printy("3 values are available for this setting", "c")
                 printy("If you enter start which is the default value for this setting that's to available updates will be fetched at start", "c")
-                printy("If you enter operation, ZCrypt will check for available updates every time you encrypt or decrypt something", "c")
+                printy("If you enter operation, ZCrypt will check for available updates every time you start ZCrypt AND every time you encrypt or decrypt something", "c")
                 printy("If you enter never ZCrypt will NEVER check for updates", "c")
                 choice = input("Input : ").lower()
                 if choice == "start" : 
@@ -1029,13 +1029,12 @@ if __name__ == '__main__' :
         loadSettings()        
 
     #Check for updates if necessary
-    if settings['checkForUpdates'] == "atStart" :
+    if settings['checkForUpdates'] == "atStart" or settings['checkForUpdates'] == "atOperation":
         import urllib.request as urlr
         result = checkForUpdates()
-        if result[0] :
-            if update(result[1]) :
-                input("Press any key to continue...")
-                exit()
+        if result[0] and update(result[1]) :
+            input("Press any key to continue...")
+            exit()
     else : printy("Warning : not checking for updates since it has been disabled in settings", "y")
 
     #check if older python file is installed
@@ -1123,7 +1122,7 @@ if __name__ == '__main__' :
         elif command == 'exit' :
             printy("Thank you for using ZCrypt ! See you soon...", "c")
             printy("Info : exiting...", "c")
-            exit()
+            break
         
         else :
             printy("Error : unknown command, please try again", "m")

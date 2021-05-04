@@ -10,10 +10,10 @@ Feel free to commit improvements and enjoy !
 
 ## Requirements (**only choose one of the two options in the bulleted list below**)
 * Install modules manually
-1. printy module which can be installed with ```pip3 install printy```
+1. printy module which can be installed with `pip3 install printy`
 2. rsa module which can be installed with `pip3 install rsa`
 * Let ZCrypt automatically fetch and install modules for you
-1. have the `pip3` command installed and available (see [pip docs](https://pip.pypa.io/en/stable/installing/) to install)
+1. have the `pip` module installed and available (see [pip docs](https://pip.pypa.io/en/stable/installing/) to install)
 
 ## License 
 ZCrypt is under the [GNU GPLv3 license](LICENSE.md)

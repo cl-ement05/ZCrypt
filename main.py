@@ -717,12 +717,13 @@ def findDayName(date) :
 
 # UPDATES AND DOWNLOADS
 def downloadFile(fileUrl: str, fileName: str, fileExtension: str) :
-    fileName = askFilename(fileName, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)
-    printy("Info : Downloading " + fileName, "c")
+    fileToSave = askFilename(fileName, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)
+    printy("Info : Downloading " + fileToSave, "c")
     downloadedFile = urlr.urlopen(fileUrl).read()
-    with open(fileName, "wb") as fileToWrite :
+    with open(fileToSave, "wb") as fileToWrite :
         fileToWrite.write(downloadedFile)
-    printy("Success : " + fileName + " was downloaded", "c")
+    printy("Success : " + fileToSave + " was downloaded", "n")
+    return fileToSave
 
 def checkForUpdates() :
     try :
@@ -739,7 +740,7 @@ def checkForUpdates() :
             printy("Warning : changing between major versions means API change. If you install this new version, you will NOT be able to decrypt messages encrypted with another major version number", "y")
             printy("Info : You are currently running " + ZCryptVersionName + " and latest version (which can be downloaded) is " + manifestData['versionName'], "n")
             return True, manifestData
-        elif int(latestMinorVersion) > int(ZCryptMinorVersion) :
+        elif int(latestMajorVersion) == int(ZCryptMajorVersion) and int(latestMinorVersion) > int(ZCryptMinorVersion) :
             printy("Info : A new update is available for ZCrypt !", "c")
             printy("You are currently running " + ZCryptVersionName + " but you can update it to " + manifestData['versionName'], "c")
             return True, manifestData
@@ -751,9 +752,9 @@ def update(manifestData) :
     answer = inputy("Do you want to install " + manifestData['versionName'] + " ? (Y/n) ", "c")
     if answer.lower() != "n" :
         try :
-            downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py")
+            savedFile = downloadFile(manifestData['download'], "newZCrypt", ".py")
             printy("ZCrypt will now quit. Please run the new version file")
-            settings['deleteOld'] = os.path.basename(__file__)
+            settings['deleteOld'] = (os.path.basename(__file__), savedFile)
             writeSettings(settings)
         except :
             printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
@@ -1031,11 +1032,11 @@ if __name__ == '__main__' :
 
     #check if older python file is present
     try :
-        if settings['deleteOld'] != os.path.basename(__file__) :    #to avoid deleting itself
-            os.remove(settings['deleteOld'])
+        if settings['deleteOld'][0] != os.path.basename(__file__) :    #to avoid deleting itself
+            os.remove(settings['deleteOld'][0])
         else :
             printy("Error : you are not launching the right ZCrypt file", "m")
-            printy("Please run the Python file called " + settings['deleteOld'], "m")
+            printy("Please run the Python file called " + settings['deleteOld'][1], "m")
             printy("Info : since this version of ZCrypt is not the newest version, ZCrypt will now exit...", "c")
             sys.exit()
     except KeyError :

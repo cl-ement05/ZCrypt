@@ -723,54 +723,44 @@ def downloadFile(fileUrl: str, fileName: str, fileExtension: str) :
     fileName = askFilename(fileName, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)
     with open(fileName, "wb") as fileToWrite :
         fileToWrite.write(downloadedFile)
-    printy("Success : " + manifestData['versionName'] + " was successfully downloaded" + afterDownloadMessage, "c")
+    printy("Success : " + fileName + " was successfully downloaded", "c")
 
-def update() :
+def checkForUpdates() :
     try :
         req = requests.get(manifestAddress)
         manifestData = req.json()['ZCrypt']
     except :
         printy("Warning : there was an error while fetching ZCrypt online manifest. Maybe your device is offline", "y")
         printy("Warning : since latest information about ZCrypt could not be fetched, ZCrypt won't check for updates", "y")
+        return False
     else :
         latestMajorVersion, latestMinorVersion = manifestData['versionCode'].split(".")
         if int(latestMajorVersion) > int(ZCryptMajorVersion) :
             printy("A new major update has been released for ZCrypt !", "c")
             printy("Warning : changing between major versions means API change. If you install this new version, you will NOT be able to decrypt messages encrypted with another major version number", "y")
             printy("Info : You are currently running " + ZCryptVersionName + " and latest version (which can be downloaded) is " + manifestData['versionName'], "n")
-            answer = inputy("Do you want to install " + manifestData['versionName'] + " ? (Y/n) ", "c")
-            if answer.lower() != "n" :
-                import urllib.request as urlr
-                try : 
-                    downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py")
-                    printy("ZCrypt will now quit. Please run the new version file")
-                    settings['deleteOld'] = os.path.basename(__file__)
-                    writeSettings(settings)
-                except :
-                    printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
-                    return False
-                else :
-                    return True
-
-        elif int(latestMinorVersion) > int(ZCryptMinorVersion) :
+            return True, manifestData
+        elif int(latestMinorVersion) > int(ZCryptMinorVersion) : 
             printy("Info : A new update is available for ZCrypt !", "c")
             printy("You are currently running " + ZCryptVersionName + " but you can update it to " + manifestData['versionName'], "c")
-            answer = inputy("Do you want to install this update ? (Y/n) ", "c")
-            if answer.lower() != "n" :
-                import urllib.request as urlr
-                try :
-                    downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py")
-                    printy("ZCrypt will now quit. Please run the new version file")
-                    settings['deleteOld'] = os.path.basename(__file__)
-                    writeSettings(settings)
-                except :
-                    printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
-                    return False
-                else :
-                    return True
+            return True, manifestData
+        else : 
+            printy("Info : ZCrypt is up to date", "c")
+            return False
 
-        else : printy("Info : ZCrypt is up to date", "c")
-        return False
+def update(manifestData) :
+    answer = inputy("Do you want to install " + manifestData['versionName'] + " ? (Y/n) ", "c")
+    if answer.lower() != "n" :
+        try : 
+            downloadFile(manifestData['download'], "ZCryptV" + manifestData['versionCode'], ".py")
+            printy("ZCrypt will now quit. Please run the new version file")
+            settings['deleteOld'] = os.path.basename(__file__)
+            writeSettings(settings)
+        except :
+            printy("Error : " + manifestData['versionName'] + " could not be downloaded. Are you connected to the internet ?", "m")
+            return False
+        else :
+            return True
 
 # SETTINGS
 def writeSettings(settingsToWrite: dict = defaultSettings) :
@@ -1039,10 +1029,13 @@ if __name__ == '__main__' :
         loadSettings()        
 
     #Check for updates if necessary
-    if settings['checkForUpdates'] == "atStart" : 
-        if update() :
-            input("Press any key to continue...")
-            exit()
+    if settings['checkForUpdates'] == "atStart" :
+        import urllib.request as urlr
+        result = checkForUpdates()
+        if result[0] :
+            if update(result[1]) :
+                input("Press any key to continue...")
+                exit()
     else : printy("Warning : not checking for updates since it has been disabled in settings", "y")
 
     #check if older python file is installed

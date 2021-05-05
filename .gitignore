@@ -1,7 +1,5 @@
 .vscode/
-.idea/
-Database/
-IDs/
 *Mail*
 *keys*
-*settings*
+*ZCrypt*
+*pycache*

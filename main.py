@@ -4,6 +4,7 @@ import utils.nettools as nettools
 
 from datetime import datetime
 from random import randint
+from unidecode import unidecode
 import base64 as b64
 import os
 import sys
@@ -367,9 +368,9 @@ def prepareEncryptedOutput(cryptingMode: str) :
         RcreateKey()
         print("")
 
-    message_input = input("First, type the message you want to encrypt : ")
-    sender = input("Please type your name that will be used in the file as the sender information : ")
-    receiver = input("Finally, type the receiver of this message : ")
+    message_input = unidecode(input("First, type the message you want to encrypt : "))
+    sender = unidecode(input("Please type your name that will be used in the file as the sender information : "))
+    receiver = unidecode(input("Finally, type the receiver of this message : "))
 
     finalMessageBinary = encryptMessage("z" if mode == "z" else "rsa", message_input)
     finalTimeEncr = encryptTime("z" if mode == "z" else "rsa")

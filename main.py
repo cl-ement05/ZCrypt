@@ -22,7 +22,7 @@ errorsDict = {
 
 lastKey = randint(35, 100)                                            #This line runs just once, at the programm start because the encryption module needs the last key (and there is no last key at the first time)
 
-def ZfileCheck() -> bool :
+def ZfileCheck(fileName) -> bool :
 #All this section checks the file integrity and assings all the lines to a dynamic variable
     global line1
     global line2
@@ -32,67 +32,62 @@ def ZfileCheck() -> bool :
     global Error_Code
 
     try :
-        file = open(file_name, 'r+')
+        file = open(fileName, 'r+')
     except FileNotFoundError :
         Error_Code = "E101"
         return False
+    
+    text = file.readlines()
+    file.close()
 
-    else :
-        text = file.readlines()
+    #Assigns a variable name with the line number to each element (line) in the file
+    line1 = text[0][:-1]
+    line2 = text[1][:-1]
+    line3 = text[2][:-1]
+    line4 = text[3][:-1]
+    line5 = text[4][:-1]
 
-        # Checks if the file has 5 lines
-        if len(text) > 5 or len(text) < 5 :
-            Error_Code = "E201"
-            return False
+    try :
+        assert type(line1) == str
+        assert type(line2) == str
+        assert type(line3) == str
+        assert type(line4) == str
+        assert type(line5) == str
+    except AssertionError :
+        Error_Code = "E202"
+        return False
 
-        #Assigns a variable name with the line number to each element (line) in the file
-        line1 = text[0][:-1]
-        line2 = text[1][:-1]
-        line3 = text[2][:-1]
-        line4 = text[3][:-1]
-        line5 = text[4][:-1]
 
+    if len(line1) == 42 :
         try :
-            assert type(line1) == str
-            assert type(line2) == str
-            assert type(line3) == str
-            assert type(line4) == str
-            assert type(line5) == str
-        except AssertionError :
-            Error_Code = "E202"
-            return False
-
-
-        if len(line1) == 42 :
-            try :
-                int(line1[:42])
-            except ValueError :
-                Error_Code = "E211"
-                return False
-        else :
+            int(line1[:42])
+        except ValueError :
             Error_Code = "E211"
             return False
+    else :
+        Error_Code = "E211"
+        return False
 
-        if "b" in line4 :
-            try :
-                int(line4[:8], 2)
-                int(line4[9:15])
-            except ValueError :
-                Error_Code = "E214"
-                return False
-        else :
+    if "b" in line4 :
+        try :
+            int(line4[:8], 2)
+            int(line4[9:15])
+        except ValueError :
             Error_Code = "E214"
             return False
+    else :
+        Error_Code = "E214"
+        return False
 
-        try :
-            int(line5)
-        except ValueError :
-            Error_Code = "E215"
-            return False
+    try :
+        int(line5)
+    except ValueError :
+        Error_Code = "E215"
+        return False
 
     return True
 
-def RfileCheck() :
+def RfileCheck(fileName) :
     global line1
     global line2
     global line3
@@ -101,7 +96,7 @@ def RfileCheck() :
     global Error_Code
 
     try :
-        file = open(file_name, 'rb+')
+        file = open(fileName, 'rb+')
     except FileNotFoundError :
         Error_Code = "E101"
         return False
@@ -120,6 +115,7 @@ def RfileCheck() :
                 currentLine += currentByte
             currentByte = file.read(1)
 
+        file.close()
         try :
             assert len(lines) == 4
         except AssertionError :
@@ -263,7 +259,7 @@ def encryptTime(mode) :
             pubKey))
 
 
-    assert len(finalTimeEncr) == 42
+    assert len(finalTimeEncr) == 42 or len(finalTimeEncr) == 28
     return finalTimeEncr
 
 
@@ -548,42 +544,61 @@ def decryptMessage(mode) :
         return rsa.decrypt(line5, privKey).decode()
 
 #This function gather all decrypted variables processed by the other functions (decryptTime, decrypt...) and does something according setting 4
-def prepareDecrypted(mode: str) :
-    global privKey
-    if mode == "z" :
-        printy("Info : entering ZCrypt decryption mode...", "c")
-        if ZfileCheck() :
-            printy("Success : your file was checked and no file integrity errors were found. Continuing...", "n")
-            ZretrieveKey()
-            finalDecrypted = decryptMessage("z")
-            senderDecr = decryptSender("z")
-            recieverDecr = decryptReciever("z")
-            dateDecr = decryptTime("z")
-        else :
-            printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
-            print("Aborting...")
-            return
-    else :
-        printy("Info : entering RSA decryption mode...", "c")
-        if RfileCheck() :
-            printy("Sucess : your file was checked and no file integrity errors were found. Continuing...", "n")
-            privKey = RretrieveKey()
-            if privKey != None :
-                try :
-                    finalDecrypted = decryptMessage("rsa")
-                    senderDecr = decryptSender("rsa")
-                    recieverDecr = decryptReciever("rsa")
-                    dateDecr = decryptTime("rsa")
-                except rsa.DecryptionError :
-                    printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
-                    return
+def prepareDecrypted() :
+    global privKey, Error_Code
+
+    printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
+    fileName = input()
+    try :
+        with open(fileName) as file :
+            file = open(fileName)
+            lines = file.readlines()
+
+        if len(lines) == 5 :
+            printy("Info : entering ZCrypt decryption mode...", "c")
+            if ZfileCheck(fileName) :
+                printy("Success : your file was checked and no file integrity errors were found. Continuing...", "n")
+                ZretrieveKey()
+                finalDecrypted = decryptMessage("z")
+                senderDecr = decryptSender("z")
+                recieverDecr = decryptReciever("z")
+                dateDecr = decryptTime("z")
             else :
+                printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
                 print("Aborting...")
                 return
+        
+        elif len(lines) == 1 : 
+            printy("Info : entering RSA decryption mode...", "c")
+            if RfileCheck(fileName) :
+                printy("Sucess : your file was checked and no file integrity errors were found. Continuing...", "n")
+                privKey = RretrieveKey()
+                if privKey != None :
+                    try :
+                        finalDecrypted = decryptMessage("rsa")
+                        senderDecr = decryptSender("rsa")
+                        recieverDecr = decryptReciever("rsa")
+                        dateDecr = decryptTime("rsa")
+                    except rsa.DecryptionError :
+                        printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
+                        return
+                else :
+                    print("Aborting...")
+                    return
+            else :
+                printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
+                print("Aborting...")
+                return
+            
         else :
-            printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
-            print("Aborting...")
+            printy("Error : this file does not match neither zcrypt neither rsa format", "m")
+            Error_Code = "E201"
             return
+
+    except (FileNotFoundError, NameError) :
+        printy("Error : file not found or not accessible (check if another process is using it)", "m")
+        Error_Code = "E101"
+        return
 
     #list of the months to know which month number corresponds to what month -> used for date format plain text
     references = {
@@ -791,13 +806,7 @@ if __name__ == '__main__' :
 
 
         elif "decrypt" in command :
-            Error_Code = ""
-            decryptMode = input("Was your file encrypted with RSA or ZCrypt algorithm (ask the sender if you don't know) ? (RSA/zcrypt) ")
-            printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
-            file_name = input()
-            if decryptMode.lower() == "zcrypt" :
-                prepareDecrypted("z")
-            else : prepareDecrypted("rsa")
+            prepareDecrypted()
 
         elif "settings" in command :
             settings.runSettings(settingsVar)

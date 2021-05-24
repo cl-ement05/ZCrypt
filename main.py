@@ -1,10 +1,5 @@
-import utils.miscs as miscs
-import utils.settings as settings
-import utils.nettools as nettools
-
 from datetime import datetime
 from random import randint
-from unidecode import unidecode
 import base64 as b64
 import os
 import sys
@@ -37,7 +32,7 @@ def ZfileCheck(fileName) -> bool :
     except FileNotFoundError :
         Error_Code = "E101"
         return False
-    
+
     text = file.readlines()
     file.close()
 
@@ -401,7 +396,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
         else :
             writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
             printy("Info : a file has been overwritten", "y")
-    
+
     if settingsVar['checkForUpdates'] == "atOperation" :
         result = nettools.checkForUpdates()
         if result[0] and nettools.update(result[1], settingsVar) :
@@ -568,8 +563,8 @@ def prepareDecrypted() :
                 printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
                 print("Aborting...")
                 return
-        
-        elif len(lines) == 1 : 
+
+        elif len(lines) == 1 :
             printy("Info : entering RSA decryption mode...", "c")
             if RfileCheck(fileName) :
                 printy("Sucess : your file was checked and no file integrity errors were found. Continuing...", "n")
@@ -590,7 +585,7 @@ def prepareDecrypted() :
                 printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
                 print("Aborting...")
                 return
-            
+
         else :
             printy("Error : this file does not match neither zcrypt neither rsa format", "m")
             Error_Code = "E201"
@@ -719,6 +714,7 @@ if __name__ == '__main__' :
     try :
         from printy import printy, inputy
         import rsa
+        from unidecode import unidecode
     except ImportError :
         print("Error : it seems at least one ZCrypt requirement, a module in this case, is not satisfied")
         print("ZCrypt can install the missing modules for you. If you don't want to do so you are also free to install them")
@@ -735,6 +731,11 @@ if __name__ == '__main__' :
                 print("Error : please make sure pip is installed and try again")
                 sys.exit()
         else : sys.exit()
+
+    #Loading utils only after all modules installed
+    import utils.miscs as miscs
+    import utils.settings as settings
+    import utils.nettools as nettools
 
     #Loading settings from file routine
     try :
@@ -772,13 +773,12 @@ if __name__ == '__main__' :
     else :
         settingsVar.pop('deleteOld')
         settings.writeSettings(settingsVar)
-    
+
     #Check for updates if necessary
     if settingsVar['checkForUpdates'] == "atStart" or settingsVar['checkForUpdates'] == "atOperation":
-        import urllib.request as urlr
         result = nettools.checkForUpdates()
         if result[0] and nettools.update(result[1], settingsVar) :
-            input("Press any enter to continue...")
+            input("Press enter to continue...")
             sys.exit()
     else : printy("Warning : not checking for updates since it has been disabled in settings", "y")
 

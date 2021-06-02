@@ -244,7 +244,7 @@ def encryptTime(mode) :
                     printy("Error : unexpected error. Please try again", "m")
                     sys.exit()
 
-            #If the try passes and the current element is an integer (so a number that is part from the date), encyption starts
+            #If the try passes and the current element is an integer (so a number that is part of the date), encyption starts
             else :
                 encryptedInt = int(element) + int(keyNum)
                 finalTimeList.append(str(encryptedInt))
@@ -380,8 +380,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
         writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
     else :
         if settingsVar['warnBeforeOW'] :                          #boolean setting 1 -> warn user that a file will be overwritten
-            printy("Warning : " + fileOutput + " already exists", 'y')
-            printy("Warning : if you continue the encryption process, the existing file will be overwritten", 'y')
+            printy("Warning : " + fileOutput + " already exists, if you continue the encryption process, the existing file will be overwritten", 'y')
             printy("Note : this operation cannot be undone", 'c')
             printy("Note : we highly recommend you to backup this file if personnal infos are stored on it", 'c')
             printy(fileOutput + " will be overwritten !!", 'y')
@@ -547,7 +546,6 @@ def prepareDecrypted() :
     fileName = input()
     try :
         with open(fileName) as file :
-            file = open(fileName)
             lines = file.readlines()
 
         if len(lines) == 5 :
@@ -652,7 +650,7 @@ def prepareDecrypted() :
 
     if settingsVar['outModeDecrypt'] == 0 :
         choiceMode = inputy("Would you like to output the decrypted content to be saved to a file or simply to be displayed on screen ? (PRINT/file) ", "c")
-        if choiceMode == "file" :
+        if choiceMode.lower() == "file" :
             printy("Info : entering file mode...")
             saveDecryptedContent(
             {
@@ -717,7 +715,7 @@ if __name__ == '__main__' :
         from unidecode import unidecode
     except ImportError :
         print("Error : it seems at least one ZCrypt requirement, a module in this case, is not satisfied")
-        print("ZCrypt can install the missing modules for you. If you don't want to do so you are also free to install them")
+        print("ZCrypt can install the missing modules for you. If you don't want to do so you are also free to install them yourself")
         answer = input("Would like to proceed to automatic installation ? (Y/n) ")
         if answer.lower() != "n" :
             print("Info : installing missing dependencies...")
@@ -726,6 +724,7 @@ if __name__ == '__main__' :
                 print("Success : missing modules were successfully installed !")
                 from printy import printy, inputy
                 import rsa
+                from unidecode import unidecode
                 print("Info : ZCrypt requirements are satified, continuing...")
             else :
                 print("Error : please make sure pip is installed and try again")
@@ -834,14 +833,14 @@ if __name__ == '__main__' :
             print("")
 
             print("If you want to encrypt a file, remeber that it will be saved in the same location of this program")
-            print("It will be created with the name \"Mail.txt\"")
-            print("You can always changes this name in the settings")
+            print("The default name for the file containing encrypted content is \"Mail.txt\"")
+            print("Note : You can change this name in the settings")
             print("")
 
             print("If you want to decrypt a file, you will need to specify its name as you launch the decrypting process")
             print("")
 
-            print("If the program says that your file has a problem and that it can't be decrypted, don't panic !")
+            print("If ZCrypt tells you that your file has a problem and that it can't be decrypted, don't panic !")
             print("You can use the \"showError\" command !")
             print("")
 

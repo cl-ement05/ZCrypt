@@ -293,10 +293,7 @@ def ZmainEncrypt(toEncrypt: int) -> str :             #takes a single int argume
             encrypted = toEncrypt - keyNum
 
         else :
-            cut = 0
-            while toEncrypt >= limitLow :
-                toEncrypt -= 1
-                cut += 1
+            cut = toEncrypt - limitLow
             remainingKey = keyNum - cut
             encrypted = limitHigh - remainingKey
 
@@ -306,25 +303,18 @@ def ZmainEncrypt(toEncrypt: int) -> str :             #takes a single int argume
             encrypted = toEncrypt + keyNum
 
         else :
-            cut = 0
-            while toEncrypt <= limitHigh :
-                toEncrypt += 1
-                cut += 1
+            cut = limitHigh - toEncrypt
             remainingKey = keyNum - cut
             encrypted = limitLow + remainingKey
 
-    letterBinary = list()
     #If the Ascii number contains only two numbers, the programm adds a 0 in front oh the two to get a number with 3 binaires at the end
     if len(str(encrypted)) == 2 :
-        letterBinary.append('00000000')
-        for asciiNbr in range(2) :
-            letterBinary.append(format(int(str(encrypted)[asciiNbr]), '08b'))
+        letterBinary = '00000000' + format(int(str(encrypted)[0]), '08b') + format(int(str(encrypted)[1]), '08b')
 
-    elif len(str(encrypted)) == 3 :
-        for asciiNbr in range(3) :
-            letterBinary.append(format(int(str(encrypted)[asciiNbr]), '08b'))
+    else :
+        letterBinary = format(int(str(encrypted)[0]), '08b') + format(int(str(encrypted)[1]), '08b') + format(int(str(encrypted)[2]), '08b')
 
-    return ''.join(letterBinary)
+    return letterBinary
 
 
 # Crypting the message
@@ -437,11 +427,11 @@ def decryptTime(mode) :
         monthDecrypted = dateDecr[2:4]
         yearDecrypted = dateDecr[4:]
 
-        if len(str(dayDecrypted)) == 1 :
+        if len(dayDecrypted) == 1 :
             nbr = str(dayDecrypted)[0]
             dayDecrypted = str(0) + str(nbr)
 
-        if len(str(monthDecrypted)) == 1 :
+        if len(monthDecrypted) == 1 :
             nbr = str(monthDecrypted)[0]
             monthDecrypted = str(0) + str(nbr)
 
@@ -455,15 +445,15 @@ def decryptTime(mode) :
         minDecrypted = timeDecr[2:4]
         secDecrypted = timeDecr[4:]
 
-        if len(str(hourDecrypted)) == 1 :
+        if len(hourDecrypted) == 1 :
             nbr = str(hourDecrypted)[0]
             hourDecrypted = str(0) + str(nbr)
 
-        if len(str(minDecrypted)) == 1 :
+        if len(minDecrypted) == 1 :
             nbr = str(minDecrypted)[0]
             minDecrypted = str(0) + str(nbr)
 
-        if len(str(secDecrypted)) == 1 :
+        if len(secDecrypted) == 1 :
             nbr = str(secDecrypted)[0]
             secDecrypted = str(0) + str(nbr)
 
@@ -504,10 +494,7 @@ def ZmainDecrypt(bitsOfAscii: str) -> int :         #bitsOfAscii must be an str 
             decryptedAscii = toDecrypt + decryptKey
 
         elif toDecrypt + decryptKey > limitHigh :                     # Will be triggered if the decrypted ascii number is out of range of the ascii table
-            cut = 0
-            while toDecrypt <= limitHigh :
-                toDecrypt += 1
-                cut += 1
+            cut = limitHigh - toDecrypt
             remainingKey = decryptKey - cut
             decryptedAscii = limitLow + remainingKey
 
@@ -516,10 +503,7 @@ def ZmainDecrypt(bitsOfAscii: str) -> int :         #bitsOfAscii must be an str 
             decryptedAscii = toDecrypt - decryptKey
 
         elif toDecrypt - decryptKey < limitLow :
-            cut = 0
-            while toDecrypt >= limitLow :
-                toDecrypt -= 1
-                cut += 1
+            cut = toDecrypt - limitLow
             remainingKey = decryptKey - cut
             decryptedAscii = limitHigh - remainingKey
 

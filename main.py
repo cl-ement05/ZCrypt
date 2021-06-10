@@ -518,51 +518,50 @@ def prepareDecrypted() :
     try :
         with open(fileName) as file :
             lines = file.readlines()
-
-        if len(lines) == 5 :
-            printy("Info : entering ZCrypt decryption mode...", "c")
-            if ZfileCheck(fileName) :
-                printy("Success : your file was checked and no file integrity errors were found. Continuing...", "n")
-                ZretrieveKey()
-                finalDecrypted = decryptMessage("z")
-                senderDecr = decryptSender("z")
-                recieverDecr = decryptReciever("z")
-                dateDecr = decryptTime("z")
-            else :
-                printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
-                print("Aborting...")
-                return
-
-        elif len(lines) == 1 :
-            printy("Info : entering RSA decryption mode...", "c")
-            if RfileCheck(fileName) :
-                printy("Sucess : your file was checked and no file integrity errors were found. Continuing...", "n")
-                privKey = RretrieveKey()
-                if privKey != None :
-                    try :
-                        finalDecrypted = decryptMessage("rsa")
-                        senderDecr = decryptSender("rsa")
-                        recieverDecr = decryptReciever("rsa")
-                        dateDecr = decryptTime("rsa")
-                    except rsa.DecryptionError :
-                        printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
-                        return
-                else :
-                    print("Aborting...")
-                    return
-            else :
-                printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
-                print("Aborting...")
-                return
-
-        else :
-            printy("Error : this file does not match neither zcrypt neither rsa format", "m")
-            Error_Code = "E201"
-            return
-
-    except (FileNotFoundError, NameError) :
+    except (FileNotFoundError, IOError) :
         printy("Error : file not found or not accessible", "m")
         Error_Code = "E101"
+        return
+
+    if len(lines) == 5 :
+        printy("Info : entering ZCrypt decryption mode...", "c")
+        if ZfileCheck(fileName) :
+            printy("Success : your file was checked and no file integrity errors were found. Continuing...", "n")
+            ZretrieveKey()
+            finalDecrypted = decryptMessage("z")
+            senderDecr = decryptSender("z")
+            recieverDecr = decryptReciever("z")
+            dateDecr = decryptTime("z")
+        else :
+            printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
+            print("Aborting...")
+            return
+
+    elif len(lines) == 1 :
+        printy("Info : entering RSA decryption mode...", "c")
+        if RfileCheck(fileName) :
+            printy("Sucess : your file was checked and no file integrity errors were found. Continuing...", "n")
+            privKey = RretrieveKey()
+            if privKey != None :
+                try :
+                    finalDecrypted = decryptMessage("rsa")
+                    senderDecr = decryptSender("rsa")
+                    recieverDecr = decryptReciever("rsa")
+                    dateDecr = decryptTime("rsa")
+                except rsa.DecryptionError :
+                    printy("Error : private key is not valid or does not match the public key used to encrypt this message", "m")
+                    return
+            else :
+                print("Aborting...")
+                return
+        else :
+            printy("Error ! Either the file specified does not use the needed format for the program either it is corrupted.", "m")
+            print("Aborting...")
+            return
+
+    else :
+        printy("Error : this file does not match neither zcrypt neither rsa format", "m")
+        Error_Code = "E201"
         return
 
     #list of the months to know which month number corresponds to what month -> used for date format plain text

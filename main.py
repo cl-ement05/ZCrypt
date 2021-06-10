@@ -341,7 +341,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
     else :
         mode = "RSA"
         printy("Info : entering RSA encryption mode...", "c")
-        printy("Warning : decrypting RSA messages is only supported on ZCrypt V3.0+, make sure the receiver meets this requirement", "y")
+        printy("Note : please keep in mind that decrypting RSA messages is only supported on ZCrypt V3.0+", "c")
         RcreateKey()
         print("")
 
@@ -361,9 +361,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
     else :
         if settingsVar['warnBeforeOW'] :                          #boolean setting 1 -> warn user that a file will be overwritten
             printy("Warning : " + fileOutput + " already exists, if you continue the encryption process, the existing file will be overwritten", 'y')
-            printy("Note : this operation cannot be undone", 'c')
-            printy("Note : we highly recommend you to backup this file if personnal infos are stored on it", 'c')
-            printy(fileOutput + " will be overwritten !!", 'y')
+            printy("Note : this operation cannot be undone, we highly recommend you to backup this file if personnal infos are stored on it", 'c')
             printy("Are you sure you want to continue ? (y/N)", 'y', end = '')
             answer = input(" ").lower()
             if answer == "y" :
@@ -519,7 +517,7 @@ def prepareDecrypted() :
         with open(fileName) as file :
             lines = file.readlines()
     except (FileNotFoundError, IOError) :
-        printy("Error : file not found or not accessible", "m")
+        printy("Error : this file does not exist or you do not have permissions to access it", "m")
         Error_Code = "E101"
         return
 

@@ -643,7 +643,7 @@ def prepareDecrypted() :
 
     if settingsVar['checkForUpdates'] == "atOperation" :
         result = nettools.checkForUpdates()
-        if result[0] and nettools.update(result[1], settingsVar) :
+        if result != None and nettools.update(result, settingsVar) :
             input("Press any enter to continue...")
             sys.exit()
 

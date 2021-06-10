@@ -27,21 +27,21 @@ def checkForUpdates() :
     except :
         printy("Warning : there was an error while fetching ZCrypt online manifest. Maybe your device is offline", "y")
         printy("Warning : since latest information about ZCrypt could not be fetched, ZCrypt won't check for updates", "y")
-        return False, None
+        return None
     else :
         latestMajorVersion, latestMinorVersion = manifestData['versionCode'].split(".")
         if int(latestMajorVersion) > int(ZCryptMajorVersion) :
             printy("A new major update has been released for ZCrypt !", "c")
             printy("Warning : changing between major versions means API change. If you install this new version, you will NOT be able to decrypt messages encrypted with another major version number", "y")
             printy("Info : You are currently running " + ZCryptVersionName + " and latest version (which can be downloaded) is " + manifestData['versionName'], "n")
-            return True, manifestData
+            return manifestData
         elif int(latestMajorVersion) == int(ZCryptMajorVersion) and int(latestMinorVersion) > int(ZCryptMinorVersion) :
             printy("Info : A new update is available for ZCrypt !", "c")
             printy("You are currently running " + ZCryptVersionName + " but you can update it to " + manifestData['versionName'], "c")
-            return True, manifestData
+            return manifestData
         else :
             printy("Info : ZCrypt is up to date", "c")
-            return False, None
+            return None
 
 def update(manifestData, settingsVar) :
     answer = inputy("Do you want to install " + manifestData['versionName'] + " ? (Y/n) ", "c")

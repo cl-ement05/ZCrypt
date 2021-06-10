@@ -28,13 +28,11 @@ def ZfileCheck(fileName) -> bool :
     global Error_Code
 
     try :
-        file = open(fileName, 'r+')
-    except FileNotFoundError :
+        with open(fileName, 'r+') as file :
+            text = file.readlines()
+    except (FileNotFoundError, IOError) :
         Error_Code = "E101"
         return False
-
-    text = file.readlines()
-    file.close()
 
     #Assigns a variable name with the line number to each element (line) in the file
     line1 = text[0][:-1]
@@ -112,9 +110,7 @@ def RfileCheck(fileName) :
             currentByte = file.read(1)
 
         file.close()
-        try :
-            assert len(lines) == 4
-        except AssertionError :
+        if not len(lines) == 4 :
             Error_Code = "E201"
             return False
 
@@ -155,21 +151,20 @@ def RretrieveKey() :
     else :
         fileNameInput = input("Please enter the COMPLETE name of the file which contains the private key (must end with .txt) : ")
         try :
-            file = open(fileNameInput, "r")
-            keys = file.readlines()
-            try :
-                assert len(keys) == 5
-                n = int(keys[0])
-                e = int(keys[1])
-                d = int(keys[2])
-                p = int(keys[3])
-                q = int(keys[4])
-            except (ValueError, AssertionError) :
+            with open(fileNameInput, "r") as file :
+                keys = file.readlines()
+            if len(keys) == 5 :
+                n = keys[0]
+                e = keys[1]
+                d = keys[2]
+                p = keys[3]
+                q = keys[4]
+            else :
                 printy("Error : this file does not contain valid data", "m")
                 return None
 
-        except FileNotFoundError :
-            printy("Error : this file does not exist", "m")
+        except (FileNotFoundError, IOError) :
+            printy("Error : this file does not exist or you do not have permissions to access it", "m")
             return None
 
     try :
@@ -215,13 +210,12 @@ def RcreateKey() :
     if answer != "n" :
         fileName = miscs.askFilename("keys")
         printy("Info : saving private key...", "c")
-        file = open(fileName, "w")
-        file.write(str(privKey.n) + "\n")
-        file.write(str(privKey.e) + "\n")
-        file.write(str(privKey.d) + "\n")
-        file.write(str(privKey.p) + "\n")
-        file.write(str(privKey.q))
-        file.close()
+        with open(fileName, "w") as file :
+            file.write(str(privKey.n) + "\n")
+            file.write(str(privKey.e) + "\n")
+            file.write(str(privKey.d) + "\n")
+            file.write(str(privKey.p) + "\n")
+            file.write(str(privKey.q))
         printy("Success : saved private key specs to " + fileName, "n")
 
 
@@ -246,8 +240,7 @@ def encryptTime(mode) :
 
             #If the try passes and the current element is an integer (so a number that is part of the date), encyption starts
             else :
-                encryptedInt = int(element) + int(keyNum)
-                finalTimeList.append(str(encryptedInt))
+                finalTimeList.append(str(int(element) + int(keyNum)))
         finalTimeEncr = "".join(finalTimeList)
     else :
         return b64.b64encode(rsa.encrypt(
@@ -298,7 +291,7 @@ def ZmainEncrypt(toEncrypt: int) -> str :             #takes a single int argume
             encrypted = limitHigh - remainingKey
 
     #If the key is an impair number
-    elif keyNum % 2 == 1 :
+    else :
         if toEncrypt + keyNum <= limitHigh :
             encrypted = toEncrypt + keyNum
 
@@ -307,7 +300,7 @@ def ZmainEncrypt(toEncrypt: int) -> str :             #takes a single int argume
             remainingKey = keyNum - cut
             encrypted = limitLow + remainingKey
 
-    #If the Ascii number contains only two numbers, the programm adds a 0 in front oh the two to get a number with 3 binaires at the end
+    #If the Ascii number contains only two numbers, the program adds a 0 in front oh the two to get a number with 3 binaires at the end
     if len(str(encrypted)) == 2 :
         letterBinary = '00000000' + format(int(str(encrypted)[0]), '08b') + format(int(str(encrypted)[1]), '08b')
 
@@ -325,9 +318,8 @@ def encryptMessage(mode, message_input) :
         for letter in message_input :
             #Transforms the character in its ascii number
             asciiChr = ord(letter)
-            letterBinary = ZmainEncrypt(asciiChr)
 
-            finalMessageBinary += letterBinary
+            finalMessageBinary += ZmainEncrypt(asciiChr)
 
         printy("Info : Your key is : " + str(keyNum), 'c')
         return finalMessageBinary
@@ -364,9 +356,7 @@ def prepareEncryptedOutput(cryptingMode: str) :
 
     fileOutput = settingsVar['fileOutput']
 
-    try :
-        open(fileOutput, "r")            #opening in read mode the name specified by the user so that if a file with the same already exists, no error will be raised
-    except FileNotFoundError :                         #else if an error is thrown, file was not found so no file will be overwritten -> writeFile
+    if not os.path.isfile(fileOutput) :
         writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
     else :
         if settingsVar['warnBeforeOW'] :                          #boolean setting 1 -> warn user that a file will be overwritten
@@ -395,15 +385,13 @@ def prepareEncryptedOutput(cryptingMode: str) :
 #Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
 def writeFile(mode: str, *args: str or bytes) :
     #'\n' is used to go to a new line at every new file settings
-    file_w = open(settingsVar['fileOutput'], "w" if mode == "z" else "wb")
-    if mode == "z" :
-        for elementToW in args :
-            if elementToW is not None : file_w.write(elementToW + "\n")
-        file_w.close()
-    else :
-        for elementToW in args :
-            if elementToW is not None : file_w.write(elementToW + '|'.encode("utf8"))
-        file_w.close()
+    with open(settingsVar['fileOutput'], "w" if mode == "z" else "wb") as fileW :
+        if mode == "z" :
+            for elementToW in args :
+                if elementToW is not None : fileW.write(elementToW + "\n")
+        else :
+            for elementToW in args :
+                if elementToW is not None : fileW.write(elementToW + '|'.encode("utf8"))
 
     printy("Success : your message has been securely encrypted !", 'n')
 
@@ -498,7 +486,7 @@ def ZmainDecrypt(bitsOfAscii: str) -> int :         #bitsOfAscii must be an str 
             remainingKey = decryptKey - cut
             decryptedAscii = limitLow + remainingKey
 
-    elif keyMethod == 'minus' :
+    else :
         if toDecrypt - decryptKey >= limitLow :
             decryptedAscii = toDecrypt - decryptKey
 
@@ -514,9 +502,8 @@ def decryptMessage(mode) :
     if mode == "z" :
         finalDecrypted = ''
 
-        messageEncr = [line5[i:i+24] for i in range(0, len(line5), 24)]
-        for encrBits in messageEncr :
-            decryptedAscii = ZmainDecrypt(encrBits)
+        for i in range(0, len(line5), 24) :
+            decryptedAscii = ZmainDecrypt(line5[i:i+24])
             finalDecrypted += chr(decryptedAscii)
         return finalDecrypted
     else :
@@ -574,7 +561,7 @@ def prepareDecrypted() :
             return
 
     except (FileNotFoundError, NameError) :
-        printy("Error : file not found or not accessible (check if another process is using it)", "m")
+        printy("Error : file not found or not accessible", "m")
         Error_Code = "E101"
         return
 

@@ -208,7 +208,7 @@ def RcreateKey() :
     printy("Do you want to save your private key to a text file ? (Y/n) ", "c", end = ' ')
     answer = input("")
     if answer != "n" :
-        fileName = miscs.askFilename("keys")
+        fileName = miscs.askFilename("keys.txt")
         printy("Info : saving private key...", "c")
         with open(fileName, "w") as file :
             file.write(str(privKey.n) + "\n")
@@ -247,8 +247,6 @@ def encryptTime(mode) :
             currentTime.encode(),
             pubKey))
 
-
-    assert len(finalTimeEncr) == 42 or len(finalTimeEncr) == 28
     return finalTimeEncr
 
 
@@ -354,36 +352,47 @@ def prepareEncryptedOutput(cryptingMode: str) :
     senderEncr = encryptSender("z" if mode == "z" else "rsa", sender)
     recieverEncr = encryptReciever("z" if mode == "z" else "rsa", receiver)
 
-    fileOutput = settingsVar['fileOutput']
+    
+    # Tkinter part
+    dirToSave = os.path.abspath(fdialog.askdirectory())
+    absDir = os.path.abspath(dirToSave)
+    if dirToSave != "" :
+        printy("Info : saving encrypted content to location : " + absDir, "n")
+    else : 
+        printy("Error : please select an existing directory", "m")
+        printy("Info : since no valid directory was selected, the file will be saved to ZCrypt path's")
+        absDir = os.path.abspath(__file__)
+    fileName = miscs.askFilename("Mail.txt")
+    completePath = os.path.join(absDir, fileName)
 
-    if not os.path.isfile(fileOutput) :
-        writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
+    if not os.path.isfile(completePath) :
+        writeFile(mode, completePath, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
     else :
         if settingsVar['warnBeforeOW'] :                          #boolean setting 1 -> warn user that a file will be overwritten
-            printy("Warning : " + fileOutput + " already exists, if you continue the encryption process, the existing file will be overwritten", 'y')
+            printy("Warning : " + fileName + " already exists, if you continue the encryption process, the existing file will be overwritten", 'y')
             printy("Note : this operation cannot be undone, we highly recommend you to backup this file if personnal infos are stored on it", 'c')
             printy("Are you sure you want to continue ? (y/N)", 'y', end = '')
             answer = input(" ").lower()
             if answer == "y" :
-                writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)   #after user confirmation that file can be overwritten -> writeFile
+                writeFile(mode, completePath, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)   #after user confirmation that file can be overwritten -> writeFile
             else :
                 printy("Info : encryption aborted", 'c')
 
         #if the warning has been disabled
         else :
-            writeFile(mode, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
-            printy("Info : a file has been overwritten", "y")
+            writeFile(mode, completePath, finalTimeEncr, senderEncr, recieverEncr, keyToWrite if mode == "z" else None, finalMessageBinary)
+            printy("Note : a file has been overwritten", "y")
 
     if settingsVar['checkForUpdates'] == "atOperation" :
         result = nettools.checkForUpdates()
-        if result[0] and nettools.update(result[1], settingsVar) :
+        if result != None and nettools.update(result, settingsVar) :
             input("Press any enter to continue...")
             sys.exit()
 
 #Write all encrypted content to the file using the settings prepared by the prepareEncryptedOutputt function
-def writeFile(mode: str, *args: str or bytes) :
+def writeFile(mode: str, filePath: str, *args: str or bytes) :
     #'\n' is used to go to a new line at every new file settings
-    with open(settingsVar['fileOutput'], "w" if mode == "z" else "wb") as fileW :
+    with open(filePath, "w" if mode == "z" else "wb") as fileW :
         if mode == "z" :
             for elementToW in args :
                 if elementToW is not None : fileW.write(elementToW + "\n")
@@ -511,8 +520,7 @@ def decryptMessage(mode) :
 def prepareDecrypted() :
     global privKey, Error_Code
 
-    printy("Please specify the COMPLETE name of the file with the .txt end !", "c")
-    fileName = input()
+    fileName = fdialog.askopenfilename()
     try :
         with open(fileName) as file :
             lines = file.readlines()
@@ -663,7 +671,7 @@ def printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, date, time) 
 
 #func used to save decrypted output to a human-readable file
 def saveDecryptedContent(dico: dict) :
-    fileName = miscs.askFilename("Decrypted")
+    fileName = miscs.askFilename("Decrypted.txt")
 
     fileToWrite = open(fileName, 'w')
     for element in dico.keys() :
@@ -675,12 +683,12 @@ def saveDecryptedContent(dico: dict) :
 if __name__ == '__main__' :
     # START-UP
     #Module check routine
-    print(ZCryptVersionName)
-    print("Info : ZCrypt is starting up...")
+    print("Info : " + ZCryptVersionName + " is starting up...")
     try :
         from printy import printy, inputy
         import rsa
         from unidecode import unidecode
+        import tkinter.filedialog as fdialog
     except ImportError :
         print("Error : it seems at least one ZCrypt requirement, a module in this case, is not satisfied")
         print("ZCrypt can install the missing modules for you. If you don't want to do so you are also free to install them yourself")
@@ -744,7 +752,7 @@ if __name__ == '__main__' :
     #Check for updates if necessary
     if settingsVar['checkForUpdates'] == "atStart" or settingsVar['checkForUpdates'] == "atOperation":
         result = nettools.checkForUpdates()
-        if result[0] and nettools.update(result[1], settingsVar) :
+        if result != None and nettools.update(result, settingsVar) :
             input("Press enter to continue...")
             sys.exit()
     else : printy("Warning : not checking for updates since it has been disabled in settings", "y")

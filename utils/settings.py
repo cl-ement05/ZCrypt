@@ -1,7 +1,6 @@
 from printy import printy, inputy
 
 defaultSettings = {
-    "fileOutput" : "Mail.txt",
     "dateFormat" : '1',
     "warnBeforeOW" : True,
     "outModeDecrypt" : 0,
@@ -40,13 +39,12 @@ def runSettings(settings) :
     print("\n")
     printy("You are now in the settings !", "c")
     printy("Here, are the options you can change :", "c")
-    printy("    - 1: encrypted file name", "c")
-    printy("    - 2: date display format", "c")
-    printy("    - 3: warn before overwrite", "c")
-    printy("    - 4: decrypted content output mode", "c")
-    printy("    - 5: encryption and decryption algorithm", "c")
-    printy("    - 6: RSA keys size (number of bits)", "c")
-    printy("    - 7: Fetch ZCrypt updates\n", "c")
+    printy("    - 1: date display format", "c")
+    printy("    - 2: warn before overwrite", "c")
+    printy("    - 3: decrypted content output mode", "c")
+    printy("    - 4: encryption and decryption algorithm", "c")
+    printy("    - 5: RSA keys size (number of bits)", "c")
+    printy("    - 6: Fetch ZCrypt updates\n", "c")
 
     printy("If you want to see the current value of an option, type \"see\" followed by the number linked to the option", "c")
     printy("If you want to change this value, type \"set\" followed by the number linked to the option", "c")
@@ -58,29 +56,26 @@ def runSettings(settings) :
 
         if 'see' in settingsCmd and len(settingsCmd) == 5 :
             if settingsCmd[4] == '1' :
-                print("Your encrypted messages are currently saved in a file named :", settings['fileOutput'])
-
-            elif settingsCmd[4] == '2' :
                 print("The date format is currently set to", settings['dateFormat'])
 
-            elif settingsCmd[4] == '3' :
+            elif settingsCmd[4] == '2' :
                 print(("Warning before overwrite is currently enabled" if settings['warnBeforeOW'] else "No warning will be shown before you overwrite an existing file"))
 
-            elif settingsCmd[4] == '4' :
+            elif settingsCmd[4] == '3' :
                 if settings['outModeDecrypt'] != 0 :
                     printy("Any content you decrypt will be outputed to " + ("a file" if settings['outModeDecrypt'] == 1 else "screen directly"), "c")
                 else : printy("ZCrypt will always ask you if you want to save your decrypted content to a file or if you want to print it on screen", "c")
 
-            elif settingsCmd[4] == '5' :
+            elif settingsCmd[4] == '4' :
                 if settings['encryptionMode'] == "ask" : printy("ZCrypt will always ask you if you want to encrypt a message using ZCrypt algorithm or RSA", 'c')
                 elif settings['encryptionMode'] == "RSA" : printy("ZCrypt will always encrypt using RSA", "c")
                 else : printy("ZCrypt will always encrypt your messages using ZCrypt algorithm")
 
-            elif settingsCmd[4] == '6' :
+            elif settingsCmd[4] == '5' :
                 printy("RSA uses public and private keys to encrypt/decrypt content. These keys are made of very high numbers (more than 20 digits)", "c")
                 printy("Currently RSA keys have a length of " + str(settings['rsaKeyBytes']) + " bits", "c")
 
-            elif settingsCmd[4] == "7" :
+            elif settingsCmd[4] == "6" :
                 printy("ZCrypt can automatically fetch updates for you", "c")
                 if settings["checkForUpdates"] == "atStart" :
                     printy("Currently ZCrypt checks for updates every time you start ZCrypt", "c")
@@ -95,16 +90,6 @@ def runSettings(settings) :
 
         elif 'set' in settingsCmd and len(settingsCmd) == 5 :
             if settingsCmd[4] == '1' :
-                fileOutput = input("Please enter the name of file you want to be saved as. Don't forget to ad (.txt) at the end ! : ")
-                if not (len(fileOutput) > 4 and fileOutput[-4:] == ".txt") :
-                    printy("Error : the name you entered is not valid. Nothing has been changed", "m")
-                else :
-                    settings['fileOutput'] = fileOutput
-                    writeSettings(settings)
-                    printy("Sucess : the name of the output file has been successfully changed to", "n", end = ' ')
-                    printy(fileOutput, 'n')
-
-            elif settingsCmd[4] == '2' :
                 printy("You have the choice between 4 date formats : 1) dd/mm/YYYY, 2) dd/mm/YY, 3) YYYY-mm-dd or just the 4) plain text format", 'c')
                 choice = inputy("Please enter the number of the date format you want to use (1, 2, 3 or 4) : ", 'c')
                 try :
@@ -116,7 +101,7 @@ def runSettings(settings) :
                         printy("Error : " + choice + " is not an offered choice", 'm')
                 except ValueError : printy("Error : Please enter an integer", "m")
 
-            elif settingsCmd[4] == '3' :
+            elif settingsCmd[4] == '2' :
                 printy("Sometimes when you encrypt a file, another file with the same name already exists", 'c')
                 printy("When this happens, ZCrypt offers you to choice between overwriting the existing file or doing nothing", 'c')
                 printy("When the file is overwritten, you lose all the data stored on it. This is why we recommend you to backup its content before overwriting", 'c')
@@ -133,7 +118,7 @@ def runSettings(settings) :
                     printy("Nothing has been changed", 'n')
                     printy("Returning...", 'n')
 
-            elif settingsCmd[4] == "4" :
+            elif settingsCmd[4] == "3" :
                 printy("3 values are available for this setting : 0, 1 and 2", "c")
                 printy("If you choose 0, ZCrypt will always ask you if you want to save to a file or just show the content on screen", "c")
                 printy("If you choose 1, ZCrypt will always save your decrypted content to a file", "c")
@@ -149,7 +134,7 @@ def runSettings(settings) :
                 except ValueError :
                     printy("Error : please enter an integer", "m")
 
-            elif settingsCmd[4] == '5' :
+            elif settingsCmd[4] == '4' :
                 printy("ZCrypt offers you 2 different encryption algorithms for encrypting your messages", "c")
                 printy("3 values are available for this setting : ask, RSA and zcrypt", "c")
                 printy("If you choose ask, ZCrypt will always ask you if you want to use RSA or ZCrypt custom algorithm to encrypt your messages", "c")
@@ -171,7 +156,7 @@ def runSettings(settings) :
                 else :
                     printy("The value you entered is not valid. Nothing has been changed", "m")
 
-            elif settingsCmd[4] == '6' :
+            elif settingsCmd[4] == '5' :
                 printy("RSA uses public and private keys to encrypt/decrypt content. These keys are made of very high numbers (more than 20 digits)", "c")
                 printy("You can set the length of these numbers by entering the number of bits which must be a pow of 2 (256, 512, 1024, 2048...)", "c")
                 printy("The highest number of bits, the higher security but also the longer time to generate the keys", "c")
@@ -194,7 +179,7 @@ def runSettings(settings) :
                 except AssertionError :
                     printy("Error : please enter a power of 2", "m")
 
-            elif settingsCmd[4] == '7' :
+            elif settingsCmd[4] == '6' :
                 printy("ZCrypt can automatically check for new updates and download them if necessary", "c")
                 printy("By default, ZCrypt does that every time you start however you can change this behavior", "c")
                 printy("3 values are available for this setting", "c")

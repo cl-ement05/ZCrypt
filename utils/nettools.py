@@ -12,7 +12,7 @@ ZCryptMajorVersion = "4"
 ZCryptVersionName = "ZCrypt V4.0"
 
 def downloadFile(fileUrl: str, fileName: str, fileExtension: str) :
-    fileToSave = miscs.askFilename(fileName, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)
+    fileToSave = miscs.askFilename(fileName + fileExtension, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)
     printy("Info : Downloading " + fileToSave, "c")
     downloadedFile = urlr.urlopen(fileUrl).read()
     with open(fileToSave, "wb") as fileToWrite :

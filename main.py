@@ -624,30 +624,26 @@ def prepareDecrypted() :
 
     finalEntireTime = dateDecr[3] + ':' + dateDecr[4] + ':' + dateDecr[5]
 
+    dicoOutput = {
+                "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
+                "Sender" : senderDecr,
+                "receiver" : recieverDecr,
+                "Message" : finalDecrypted
+    }
+
     if settingsVar['outModeDecrypt'] == 0 :
         choiceMode = inputy("Would you like to output the decrypted content to be saved to a file or simply to be displayed on screen ? (PRINT/file) ", "c")
         if choiceMode.lower() == "file" :
             printy("Info : entering file mode...")
-            saveDecryptedContent(
-            {
-                "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
-                "Sender" : senderDecr,
-                "receiver" : recieverDecr,
-                "Message" : finalDecrypted
-            })
+            saveDecryptedContent(dicoOutput)
         else :
             printy("Info : entering print mode...")
-            printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
+            printDecryptedContent(dicoOutput)
 
     elif settingsVar['outModeDecrypt'] == 1 :
-        saveDecryptedContent(
-            {
-                "Timestamp" : finalEntireDate + ' at ' + finalEntireTime,
-                "Sender" : senderDecr,
-                "receiver" : recieverDecr,
-                "Message" : finalDecrypted
-            })
-    else : printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, finalEntireDate, finalEntireTime)
+        saveDecryptedContent(dicoOutput)
+    else : 
+        printDecryptedContent(dicoOutput)
 
     if settingsVar['checkForUpdates'] == "atOperation" :
         result = nettools.checkForUpdates()
@@ -655,19 +651,9 @@ def prepareDecrypted() :
             input("Press any enter to continue...")
             sys.exit()
 
-def printDecryptedContent(senderDecr, recieverDecr, finalDecrypted, date, time) :
-    printy("This message was created " + date + ' at ' + time, "c>")
-    print("")
-
-    printy(senderDecr + " sent it !", "c>")
-    print("")
-
-    printy(recieverDecr + " should receive it !", "c>")
-    print("")
-
-    printy("The message is : " + finalDecrypted, "c>")
-
-    print("")
+def printDecryptedContent(dico: dict) :
+    for element in dico.keys() :
+        print(element + " : " + dico[element] + "\n")
 
 #func used to save decrypted output to a human-readable file
 def saveDecryptedContent(dico: dict) :

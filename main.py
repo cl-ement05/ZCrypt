@@ -5,7 +5,7 @@ import os
 import sys
 
 Error_Code = str()
-ZCryptVersionName = "ZCrypt V4.0"
+ZCryptVersionName = "ZCrypt V4.1"
 
 errorsDict = {
     "E101" : "OS-level error : your file does not exist, is corrupted or cannot be read (check permissions)",

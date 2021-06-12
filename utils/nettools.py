@@ -7,9 +7,9 @@ import os
 from printy import printy, inputy
 
 manifestAddress = "https://github.com/cl-ement05/ZCrypt/releases/latest/download/manifest.json"
-ZCryptMinorVersion = "0"
+ZCryptMinorVersion = "1"
 ZCryptMajorVersion = "4"
-ZCryptVersionName = "ZCrypt V4.0"
+ZCryptVersionName = "ZCrypt V4.1"
 
 def downloadFile(fileUrl: str, fileName: str, fileExtension: str) :
     fileToSave = miscs.askFilename(fileName + fileExtension, "Please enter a filename that is currently NOT assigned to any file in this directory", fileExtension)

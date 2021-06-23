@@ -180,7 +180,7 @@ def ZcreateKey() :
 
     #creating new limits
     limitLow = randint(10, 31)
-    limitHigh = randint(100, 255)
+    limitHigh = randint(165, 255)
 
     keyNum = randint(limitHigh - 65, limitHigh - limitLow)
     #All this part tests if the current key is far enough from the last key

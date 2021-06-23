@@ -18,7 +18,7 @@ def writeSettings(settingsToWrite: dict = defaultSettings) :
 def loadSettings() :
     with open("ZCrypt-settings", "r") as settingsFile :
         settingsList = settingsFile.readlines()[1].split(";")[:-1]
-        assert len(settingsList) == (6 or 7)
+        assert (len(settingsList) == 6) or len(settingsList) == 7
         settings = dict()
         for setting in settingsList :
             elements = setting.split(":")
